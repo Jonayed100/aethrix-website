@@ -1,5 +1,9 @@
 from django import forms
+from django.contrib.auth import get_user_model, password_validation
 from django.utils.text import slugify
+
+from accounts.models import Profile
+from accounts.utils import unique_username
 
 from studio.models import Booking, Project, format_bdt
 
@@ -27,7 +31,7 @@ class OrderForm(forms.ModelForm):
             "progress": forms.NumberInput(attrs={"type": "range", "min": 0, "max": 100, "step": 5, "data-out": "progOut", "data-bar": "progBar"}),
             "due_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "delivery_url": forms.URLInput(attrs={"placeholder": "https://"}),
-            "admin_notes": forms.Textarea(attrs={"rows": 3, "placeholder": "Only you see this."}),
+            "admin_notes": forms.Textarea(attrs={"rows": 3, "placeholder": "Only the founder and admins see this."}),
         }
 
     def client_changes(self):
@@ -62,10 +66,16 @@ class ProjectForm(forms.ModelForm):
 
     class Meta:
         model = Project
-        fields = ["title", "slug", "category", "summary", "live_url", "tech_stack", "is_published", "sort_order"]
+        fields = ["title", "slug", "category", "summary", "description", "features_title", "features",
+                  "roadmap_title", "roadmap", "roadmap_note", "closing_title", "closing",
+                  "live_url", "tech_stack", "is_published", "sort_order"]
         widgets = {
-            "title": forms.TextInput(attrs={"placeholder": "e.g. Kickoff Arena"}),
-            "summary": forms.TextInput(attrs={"placeholder": "e.g. Futuristic turf booking website"}),
+            "title": forms.TextInput(attrs={"placeholder": "e.g. Floodlit"}),
+            "summary": forms.TextInput(attrs={"placeholder": "e.g. An online booking platform for football turfs in Dhaka."}),
+            "description": forms.Textarea(attrs={"rows": 4}),
+            "features": forms.Textarea(attrs={"rows": 7, "placeholder": "Live slot availability across multiple turfs\nSmart search — Type what you want and it filters for you"}),
+            "roadmap": forms.Textarea(attrs={"rows": 5}),
+            "closing": forms.Textarea(attrs={"rows": 4}),
             "live_url": forms.URLInput(attrs={"placeholder": "https://"}),
             "tech_stack": forms.TextInput(attrs={"placeholder": "e.g. Django, Tailwind, PostgreSQL"}),
             "sort_order": forms.NumberInput(attrs={"min": 0}),
@@ -82,3 +92,39 @@ class ProjectForm(forms.ModelForm):
         cleaned["slug"] = slug
         self.instance.slug = slug
         return cleaned
+
+
+class AdminCreateForm(forms.Form):
+    """The founder adds a team admin who can handle orders in the admin dashboard."""
+
+    name = forms.CharField(label="Full name", max_length=120, widget=forms.TextInput(attrs={"placeholder": "e.g. Rafi Ahmed"}))
+    email = forms.EmailField(widget=forms.EmailInput(attrs={"placeholder": "admin@example.com"}))
+    phone = forms.CharField(label="Phone number", max_length=40, required=False, widget=forms.TextInput(attrs={"type": "tel"}))
+    password = forms.CharField(label="Temporary password", strip=False,
+                               widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+                               help_text="Share it with them privately. They can change it in their Account page.")
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if get_user_model().objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("password"):
+            probe = get_user_model()(email=cleaned.get("email", ""), first_name=cleaned.get("name", ""))
+            try:
+                password_validation.validate_password(cleaned["password"], probe)
+            except forms.ValidationError as exc:
+                self.add_error("password", exc)
+        return cleaned
+
+    def save(self):
+        d = self.cleaned_data
+        user = get_user_model().objects.create_user(
+            username=unique_username(d["email"]), email=d["email"], password=d["password"],
+            first_name=d["name"].strip()[:150], is_staff=True,
+        )
+        Profile.objects.create(user=user, phone=d["phone"].strip(), email_verified=True)
+        return user

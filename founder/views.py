@@ -178,7 +178,7 @@ def orders_csv(request):
     _, _, qs = _filtered_orders(request)
     response = HttpResponse(content_type="text/csv; charset=utf-8")
     response["Content-Disposition"] = 'attachment; filename="aethrix-orders.csv"'
-    response.write("﻿")
+    response.write("\ufeff")
     writer = csv.writer(response)
     writer.writerow(["Reference", "Received", "Status", "Project", "Name", "Email", "Phone", "Company", "Services",
                      "Budget (BDT)", "Quote (BDT)", "Progress %", "Due date", "Delivery link", "Description"])

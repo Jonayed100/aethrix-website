@@ -23,30 +23,48 @@ def link_in(message):
     return re.search(r"https?://testserver(\S+)", message.body).group(1)
 
 
+def signup_data(**kw):
+    data = {"name": "Nadia Islam", "email": "Nadia@Example.com", "phone": "+880 1712-345678",
+            "password1": "Clinic-app-2026", "password2": "Clinic-app-2026"}
+    data.update(kw)
+    return data
+
+
 class SignupAndVerifyTests(TestCase):
     def setUp(self):
         cache.clear()
 
-    def test_signup_logs_in_and_sends_verification(self):
-        response = self.client.post(reverse("accounts:signup"), {
-            "name": "Nadia Islam", "email": "Nadia@Example.com", "password1": "Clinic-app-2026", "password2": "Clinic-app-2026"})
+    def test_signup_page_asks_for_name_email_phone_password(self):
+        page = self.client.get(reverse("accounts:signup"))
+        for field in ['name="name"', 'name="email"', 'name="phone"', 'name="password1"', 'name="password2"', "Full name", "Phone number"]:
+            self.assertContains(page, field)
+
+    def test_signup_saves_phone_logs_in_and_opens_dashboard(self):
+        response = self.client.post(reverse("accounts:signup"), signup_data())
         self.assertRedirects(response, reverse("portal:dashboard"))
         user = User.objects.get(email="nadia@example.com")
+        self.assertEqual(user.first_name, "Nadia Islam")
+        self.assertEqual(user.profile.phone, "+880 1712-345678")
+        self.assertFalse(user.is_staff)
         self.assertFalse(user.profile.email_verified)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("Verify", mail.outbox[0].subject)
+        self.assertContains(self.client.get(reverse("portal:dashboard")), "Order your first project")
+
+    def test_phone_is_required_and_checked(self):
+        self.assertContains(self.client.post(reverse("accounts:signup"), signup_data(phone="")), "Please enter your phone number.")
+        self.assertContains(self.client.post(reverse("accounts:signup"), signup_data(phone="call me")), "Enter a valid phone number")
+        self.assertFalse(User.objects.exists())
 
     def test_duplicate_email_and_weak_password_are_rejected(self):
         User.objects.create_user("x", "taken@example.com", "Some-pass-123")
-        response = self.client.post(reverse("accounts:signup"), {
-            "name": "A", "email": "TAKEN@example.com", "password1": "123", "password2": "123"})
+        response = self.client.post(reverse("accounts:signup"), signup_data(name="A", email="TAKEN@example.com", password1="123", password2="123"))
         self.assertContains(response, "already exists")
         self.assertContains(response, "too short")
 
     def test_verify_link_marks_email_and_claims_old_bookings(self):
         old = make_booking()
-        self.client.post(reverse("accounts:signup"), {
-            "name": "Nadia", "email": "nadia@example.com", "password1": "Clinic-app-2026", "password2": "Clinic-app-2026"})
+        self.client.post(reverse("accounts:signup"), signup_data(name="Nadia", email="nadia@example.com"))
         old.refresh_from_db()
         self.assertIsNone(old.client)  # not before verifying
         response = self.client.get(link_in(mail.outbox[-1]))
@@ -94,6 +112,21 @@ class LoginTests(TestCase):
     def test_founder_using_client_login_lands_in_founder_dashboard(self):
         response = self.client.post(reverse("accounts:login"), {"email": "projectaethrix@gmail.com", "password": "Founder-pass-123"})
         self.assertRedirects(response, reverse("founder:overview"))
+
+    def test_admin_using_client_login_lands_in_admin_dashboard(self):
+        User.objects.create_user("a", "admin@example.com", "Admin-pass-123", is_staff=True)
+        response = self.client.post(reverse("accounts:login"), {"email": "admin@example.com", "password": "Admin-pass-123"})
+        self.assertRedirects(response, reverse("adminpanel:overview"))
+
+    def test_admin_login_page_accepts_team_only(self):
+        User.objects.create_user("a", "admin@example.com", "Admin-pass-123", is_staff=True)
+        page = self.client.get(reverse("adminpanel:login"))
+        self.assertContains(page, "Admin <em>sign in.</em>")
+        bad = self.client.post(reverse("adminpanel:login"), {"email": "client@example.com", "password": "Client-pass-123"})
+        self.assertContains(bad, "Email or password is wrong.")
+        self.assertNotIn("_auth_user_id", self.client.session)
+        ok = self.client.post(reverse("adminpanel:login"), {"email": "admin@example.com", "password": "Admin-pass-123"})
+        self.assertRedirects(ok, reverse("adminpanel:overview"))
 
     def test_logout_needs_post(self):
         self.client.force_login(self.client_user)

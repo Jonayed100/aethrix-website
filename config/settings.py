@@ -111,7 +111,7 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24 * 3
 FOUNDER_URL = os.environ.get("FOUNDER_URL", "founder/").strip("/") + "/"
 # The admin dashboard for your team (admins handle orders). Keep it secret too.
-ADMIN_PANEL_URL = os.environ.get("ADMIN_PANEL_URL", "admin-panel/").strip("/") + "/"
+ADMIN_PANEL_URL = os.environ.get("ADMIN_PANEL_URL", "aethrix-team-5180/").strip("/") + "/"
 
 # --- Passwords, language, time ----------------------------------------------
 
