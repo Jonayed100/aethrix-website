@@ -1,0 +1,29 @@
+{% extends "founder/base.html" %}
+{% block page_title %}Account{% endblock %}
+
+{% block content %}
+<div class="topline rise"><div><p class="eyebrow">Account</p><h1>Your founder <em>login.</em></h1></div></div>
+
+<div class="grid2 grid2-even" style="margin-top:0">
+  <section class="panel rise" style="--i:1">
+    <div class="panel-h"><h2>Change password</h2></div>
+    <form class="dform" method="post">
+      {% csrf_token %}
+      {% include "dash/_field.html" with f=form.old_password label="Current password" %}
+      {% include "dash/_field.html" with f=form.new_password1 label="New password" %}
+      {% include "dash/_field.html" with f=form.new_password2 label="Confirm new password" %}
+      <div class="btns"><button class="btn btn-primary" type="submit">Change password</button></div>
+    </form>
+  </section>
+
+  <section class="panel rise" style="--i:2">
+    <div class="panel-h"><h2>Access</h2></div>
+    <dl class="dl">
+      <dt>Signed in as</dt><dd>{{ request.user.email }}</dd>
+      <dt>Founder login</dt><dd class="mono">{{ founder_path }}login/</dd>
+      <dt>Backup admin</dt><dd class="mono">{{ admin_path }}</dd>
+    </dl>
+    <p class="muted" style="font-size:.86rem;margin:18px 0 0">Only this account can open the founder dashboard. Anyone else who tries the address gets a "page not found". Keep both addresses private; you can change them with the FOUNDER_URL and ADMIN_URL settings.</p>
+  </section>
+</div>
+{% endblock %}

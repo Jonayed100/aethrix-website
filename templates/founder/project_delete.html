@@ -1,0 +1,14 @@
+{% extends "founder/base.html" %}
+{% block page_title %}Delete {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="topline rise"><div><p class="eyebrow">Demo projects / Delete</p><h1>Delete <em>{{ project.title }}?</em></h1></div></div>
+<section class="panel rise" style="--i:1;max-width:620px">
+  <p>This removes it from the website and from your list. It can't be undone. To take it off the website but keep it, hide it instead.</p>
+  <form method="post" class="btns">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Yes, delete it</button>
+    <a class="btn btn-ghost" href="{% url 'founder:projects' %}">Keep it</a>
+  </form>
+</section>
+{% endblock %}

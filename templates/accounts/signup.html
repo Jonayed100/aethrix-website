@@ -1,0 +1,19 @@
+{% extends "accounts/auth_base.html" %}
+{% block page_title %}Create account{% endblock %}
+{% block art_copy %}<p>Client dashboard</p><strong>See every order, its progress and every update in one place.</strong>{% endblock %}
+
+{% block card %}
+<p class="eyebrow">Create your account</p>
+<h1>Track your <em>projects.</em></h1>
+<p>Use the same email you booked with, and your bookings appear in your dashboard once you verify it.</p>
+<form class="dform" method="post" novalidate>
+  {% csrf_token %}
+  {% if error %}<p class="form-err" role="alert">{{ error }}</p>{% endif %}
+  {% include "dash/_field.html" with f=form.name label="Name" %}
+  {% include "dash/_field.html" with f=form.email label="Email" %}
+  {% include "dash/_field.html" with f=form.password1 %}
+  {% include "dash/_field.html" with f=form.password2 %}
+  <button class="btn btn-primary" type="submit">Create account <span class="arr">→</span></button>
+</form>
+<div class="auth-links"><span>Already have an account? <a href="{% url 'accounts:login' %}">Log in</a></span></div>
+{% endblock %}

@@ -1,0 +1,24 @@
+from django.conf import settings
+from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
+from django.urls import include, path
+
+from studio.sitemaps import StaticViewSitemap
+from studio.views import health, robots_txt
+
+admin.site.site_header = "Project Aethrix admin"
+admin.site.site_title = "Project Aethrix admin"
+admin.site.index_title = "Backup admin (use the founder dashboard day to day)"
+
+urlpatterns = [
+    path(settings.ADMIN_URL, admin.site.urls),
+    path("robots.txt", robots_txt, name="robots"),
+    path("sitemap.xml", sitemap, {"sitemaps": {"pages": StaticViewSitemap}}, name="sitemap"),
+    path("healthz", health, name="health"),
+    path(settings.FOUNDER_URL, include("founder.urls")),
+    path("dashboard/", include("portal.urls")),
+    path("", include("accounts.urls")),
+    path("", include("studio.urls")),
+]
+
+handler404 = "studio.views.not_found"

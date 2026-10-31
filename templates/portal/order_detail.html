@@ -1,0 +1,79 @@
+{% extends "portal/base.html" %}
+{% load static %}
+{% block page_title %}{{ b.reference }}{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div>
+    <p class="eyebrow"><a href="{% url 'portal:dashboard' %}" style="color:inherit">My orders</a> / {{ b.reference }}</p>
+    <h1>{{ b.display_title }}</h1>
+    <p class="sub">Booked {{ b.created_at|date:"j M Y" }}</p>
+  </div>
+  <span class="st st-{{ b.status }}">{{ b.client_status }}</span>
+</div>
+
+{% if b.status != 'declined' %}
+<section class="build rise" style="--i:1" aria-label="Project progress">
+  <div class="build-stage"><canvas data-3d="blocks" data-progress="{{ b.progress }}" aria-hidden="true"></canvas></div>
+  <div class="build-copy">
+    <p class="label">{% if b.status == 'completed' %}Delivered{% else %}Progress{% endif %}</p>
+    <div class="build-pct"><span data-count="{{ b.progress }}">{{ b.progress }}</span><small>%</small></div>
+    <ol class="track" style="{% if b.stage == 3 %}--t:1;--c:24px{% elif b.stage == 2 %}--t:.625;--c:12px{% elif b.stage == 1 %}--t:.375;--c:12px{% endif %}" aria-label="Order stage">
+      {% for s in b.track %}<li class="{% if s.done %}is-done{% elif s.current %}is-current{% endif %}"><span></span>{{ s.label }}</li>{% endfor %}
+    </ol>
+    {% if b.status == 'completed' and b.delivery_url %}
+    <div class="btns"><a class="btn btn-primary" href="{{ b.delivery_url }}" target="_blank" rel="noopener">Open your live project ↗</a></div>
+    {% elif b.delivery_url %}
+    <div class="btns"><a class="btn btn-ghost btn-sm" href="{{ b.delivery_url }}" target="_blank" rel="noopener">See the work in progress ↗</a></div>
+    {% endif %}
+  </div>
+</section>
+{% else %}
+<div class="banner rise"><p>This booking was closed. If you'd like to talk about it again, send a message below or book a new project.</p></div>
+{% endif %}
+
+<div class="detail-grid" style="margin-top:18px">
+  <section class="panel rise" style="--i:2" id="thread">
+    <div class="panel-h"><h2>Messages and updates</h2></div>
+    {% if thread %}
+    <ol class="thread">
+      {% for m in thread %}
+      <li class="msg{% if m.is_event %} event{% elif not m.from_founder %} me{% endif %}">
+        {% if not m.is_event %}<header><b>{% if m.from_founder %}Project Aethrix{% else %}You{% endif %}</b>{{ m.created_at|date:"j M, g:i A" }}</header>{% endif %}
+        <p>{{ m.body }}</p>
+      </li>
+      {% endfor %}
+    </ol>
+    {% else %}
+    <p class="muted">No messages yet. Updates from the team appear here.</p>
+    {% endif %}
+    <form class="dform" method="post">
+      {% csrf_token %}
+      {% include "dash/_field.html" with f=form.body label="Message the team" %}
+      <div class="btns"><button class="btn btn-primary btn-sm" type="submit">Send message</button></div>
+    </form>
+  </section>
+
+  <section class="panel rise" style="--i:3">
+    <div class="panel-h"><h2>Order details</h2></div>
+    <dl class="dl">
+      <dt>Reference</dt><dd class="mono">{{ b.reference }}</dd>
+      <dt>Status</dt><dd>{{ b.client_status }}</dd>
+      <dt>Needs</dt><dd>{{ b.services_display }}</dd>
+      {% if b.quoted_price_bdt %}<dt>Agreed price</dt><dd>{{ b.quote_display }}</dd>{% endif %}
+      <dt>Your budget</dt><dd>{{ b.budget_display }}</dd>
+      <dt>Timeline</dt><dd>{{ b.get_timeline_display }}</dd>
+      {% if b.due_date %}<dt>Due date</dt><dd>{{ b.due_date|date:"j M Y" }}</dd>{% endif %}
+      {% if b.completed_at %}<dt>Delivered</dt><dd>{{ b.completed_at|date:"j M Y" }}</dd>{% endif %}
+      <dt>Preferred call</dt><dd>{{ b.call_display }}</dd>
+    </dl>
+    <p class="label" style="margin:22px 0 8px">What you told us</p>
+    <p class="quote">{{ b.description }}</p>
+  </section>
+</div>
+{% endblock %}
+
+{% block dash_scripts %}
+<script src="{% static 'vendor/three.min.js' %}" defer></script>
+<script src="{% static 'js/dash3d.js' %}" defer></script>
+{% endblock %}

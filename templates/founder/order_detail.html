@@ -1,0 +1,91 @@
+{% extends "founder/base.html" %}
+{% block page_title %}{{ b.reference }}{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div>
+    <p class="eyebrow"><a href="{% url 'founder:orders' %}" style="color:inherit">Orders</a> / {{ b.reference }}</p>
+    <h1>{{ b.display_title }}</h1>
+    <p class="sub">{{ b.name }}{% if b.company %} · {{ b.company }}{% endif %} · received {{ b.created_at|date:"j M Y, g:i A" }}</p>
+  </div>
+  <span class="st st-{{ b.status }}">{{ b.get_status_display }}</span>
+</div>
+
+<div class="detail-grid">
+  <div class="stack">
+    <section class="panel rise" style="--i:1">
+      <div class="panel-h"><h2>Client</h2>
+        {% if b.client_id and account_ready %}<span class="st st-completed">Has dashboard</span>
+        {% elif b.client_id %}<span class="st st-contacted">Invite sent</span>
+        {% else %}<span class="st st-declined">No dashboard yet</span>{% endif %}
+      </div>
+      <dl class="dl">
+        <dt>Name</dt><dd>{{ b.name }}</dd>
+        <dt>Email</dt><dd><span class="copy-row"><a href="mailto:{{ b.email }}">{{ b.email }}</a><button class="copy" type="button" data-copy="{{ b.email }}">Copy</button></span></dd>
+        <dt>Phone</dt><dd>{% if b.phone %}<span class="copy-row">{{ b.phone }}<button class="copy" type="button" data-copy="{{ b.phone }}">Copy</button></span>{% else %}<span class="muted">Not given</span>{% endif %}</dd>
+        <dt>Company</dt><dd>{{ b.company|default:"—" }}</dd>
+        <dt>Needs</dt><dd>{{ b.services_display }}</dd>
+        <dt>Budget</dt><dd>{{ b.budget_display }}</dd>
+        <dt>Timeline</dt><dd>{{ b.get_timeline_display }}</dd>
+        <dt>Preferred call</dt><dd>{{ b.call_display }}</dd>
+      </dl>
+      <form method="post" action="{% url 'founder:order_invite' b.reference %}" style="margin-top:18px">
+        {% csrf_token %}
+        <button class="btn btn-ghost btn-sm" type="submit">{% if b.client_id %}Resend dashboard access{% else %}Give client dashboard access{% endif %}</button>
+        <p class="muted" style="font-size:.82rem;margin:8px 0 0">{% if account_ready %}They already have a password; this emails them a link to the order.{% else %}Emails {{ b.email }} a link to set a password and see this order.{% endif %}</p>
+      </form>
+    </section>
+
+    <section class="panel rise" style="--i:2">
+      <div class="panel-h"><h2>About the work</h2></div>
+      <p class="quote">{{ b.description }}</p>
+    </section>
+
+    <section class="panel rise" style="--i:3" id="thread">
+      <div class="panel-h"><h2>Messages and updates</h2><span class="label">Client sees all of these</span></div>
+      {% if thread %}
+      <ol class="thread">
+        {% for m in thread %}
+        <li class="msg{% if m.is_event %} event{% elif m.from_founder %} me{% endif %}">
+          {% if not m.is_event %}<header><b>{% if m.from_founder %}You{% else %}{{ b.name }}{% endif %}</b>{{ m.created_at|date:"j M, g:i A" }}</header>{% endif %}
+          <p>{{ m.body }}</p>
+        </li>
+        {% endfor %}
+      </ol>
+      {% else %}
+      <p class="muted">No messages yet.</p>
+      {% endif %}
+      <form class="dform" method="post" action="{% url 'founder:order_message' b.reference %}">
+        {% csrf_token %}
+        {% include "dash/_field.html" with f=message_form.body %}
+        <label class="check">{{ message_form.notify }} {{ message_form.notify.label }}</label>
+        <div class="btns"><button class="btn btn-primary btn-sm" type="submit">Send message</button></div>
+      </form>
+    </section>
+  </div>
+
+  <section class="panel rise" style="--i:2">
+    <div class="panel-h"><h2>Update the order</h2></div>
+    <form class="dform" method="post">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<p class="form-err">{{ form.non_field_errors.0 }}</p>{% endif %}
+      {% include "dash/_field.html" with f=form.status %}
+      {% include "dash/_field.html" with f=form.title %}
+      {% include "dash/_field.html" with f=form.quoted_price_bdt %}
+      <div class="field{% if form.progress.errors %} has-err{% endif %}">
+        <label for="{{ form.progress.id_for_label }}">Progress</label>
+        <div class="range-row">{{ form.progress }}<output id="progOut">{{ b.progress }}%</output></div>
+        <div class="bar" aria-hidden="true"><i id="progBar" style="--p:{{ b.progress }}%"></i></div>
+        {% for e in form.progress.errors %}<p class="field-err">{{ e }}</p>{% endfor %}
+      </div>
+      {% include "dash/_field.html" with f=form.due_date %}
+      {% include "dash/_field.html" with f=form.delivery_url %}
+      {% include "dash/_field.html" with f=form.note %}
+      {% include "dash/_field.html" with f=form.admin_notes %}
+      <label class="check">{{ form.notify_client }} {{ form.notify_client.label }}</label>
+      <div class="btns"><button class="btn btn-primary" type="submit">Save changes</button></div>
+      <p class="muted" style="font-size:.8rem;margin:0">Status, name, price, progress, due date and delivery link show in the client's dashboard. Private notes never do.</p>
+    </form>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<body style="margin:0;padding:0;background:#0b0606;font-family:Arial,Helvetica,sans-serif;color:#f4ecea;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0b0606;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#120808;border:1px solid #3a1015;">
+        <tr><td style="padding:24px 28px;border-bottom:3px solid #ee1c34;">
+          <div style="font-size:11px;letter-spacing:3px;color:#ee1c34;">PROJECT</div>
+          <div style="font-size:22px;font-weight:bold;letter-spacing:2px;color:#f4ecea;">AETHRIX</div>
+        </td></tr>
+        <tr><td style="padding:28px;">
+          <p style="margin:0 0 14px;font-size:20px;font-weight:bold;color:#f4ecea;">{{ heading }}</p>
+          {% if intro %}<p style="margin:0 0 20px;line-height:1.6;color:#c9b8b6;">{{ intro }}</p>{% endif %}
+          {% if rows %}
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px;line-height:1.5;">
+            {% for label, value in rows %}
+            <tr><td style="padding:8px 0;color:#a99493;width:140px;vertical-align:top;">{{ label }}</td><td style="padding:8px 0;color:#f4ecea;{% if forloop.first %}font-weight:bold;color:#ff5a6e;{% endif %}">{{ value }}</td></tr>
+            {% endfor %}
+          </table>
+          {% endif %}
+          {% if quote %}
+          {% if quote_title %}<p style="margin:22px 0 6px;color:#a99493;font-size:13px;">{{ quote_title }}</p>{% endif %}
+          <p style="margin:{% if quote_title %}0{% else %}16px 0 0{% endif %};padding:14px;background:#0b0606;border:1px solid #2a1012;line-height:1.6;white-space:pre-wrap;color:#f4ecea;">{{ quote }}</p>
+          {% endif %}
+          {% if button_url %}
+          <p style="margin:26px 0 0;"><a href="{{ button_url }}" style="display:inline-block;background:#ee1c34;color:#ffffff;text-decoration:none;font-weight:bold;padding:13px 22px;">{{ button_label }} →</a></p>
+          {% endif %}
+          {% if outro %}<p style="margin:24px 0 0;line-height:1.6;color:#c9b8b6;font-size:14px;">{{ outro }}</p>{% endif %}
+        </td></tr>
+        <tr><td style="padding:20px 28px;border-top:1px solid #2a1012;font-size:13px;color:#a99493;line-height:1.6;">
+          {{ founder_name }} · Founder, {{ site_name }}<br>
+          {{ contact_email }} · <a href="{{ site_url }}" style="color:#ff5a6e;">{{ site_url }}</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

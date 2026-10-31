@@ -1,0 +1,51 @@
+{% extends "founder/base.html" %}
+{% block page_title %}Orders{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div><p class="eyebrow">Orders</p><h1>Bookings and <em>projects.</em></h1></div>
+  <a class="btn btn-ghost btn-sm" href="{% url 'founder:orders_csv' %}?status={{ active_tab }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">Download CSV</a>
+</div>
+
+<div class="toolbar rise" style="--i:1">
+  <nav class="tabs" aria-label="Filter by status">
+    {% for t in tabs %}<a class="tab{% if t.key == active_tab %} on{% endif %}" href="?status={{ t.key }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">{{ t.label }} <small>{{ t.count }}</small></a>{% endfor %}
+  </nav>
+  <form class="search" method="get" role="search">
+    <input type="hidden" name="status" value="{{ active_tab }}">
+    <label class="vh" for="q">Search orders</label>
+    <input type="search" id="q" name="q" value="{{ q }}" placeholder="Name, email, reference…">
+    <button class="btn btn-ghost btn-sm" type="submit">Search</button>
+  </form>
+</div>
+
+{% if page.object_list %}
+<div class="tbl-wrap rise" style="--i:2">
+  <table class="tbl">
+    <thead><tr><th>Reference</th><th>Client</th><th>Project</th><th class="num">Value</th><th>Status</th><th>Progress</th><th>Received</th></tr></thead>
+    <tbody>
+      {% for b in page.object_list %}
+      <tr>
+        <td><a class="oref" href="{% url 'founder:order' b.reference %}">{{ b.reference }}</a></td>
+        <td><a class="row-link" href="{% url 'founder:order' b.reference %}">{{ b.name }}</a><small>{{ b.email }}{% if b.client_id %} · has account{% endif %}</small></td>
+        <td>{{ b.display_title }}<small>{{ b.services_display }}</small></td>
+        <td class="num">{% if b.quoted_price_bdt %}{{ b.quote_display }}<small>quote</small>{% else %}{{ b.budget_display }}<small>budget</small>{% endif %}</td>
+        <td><span class="st st-{{ b.status }}">{{ b.get_status_display }}</span></td>
+        <td><div class="bar{% if b.status == 'completed' %} is-done{% endif %}" title="{{ b.progress }}%"><i style="--p:{{ b.progress }}%"></i></div></td>
+        <td>{{ b.created_at|date:"j M Y" }}<small>{{ b.created_at|timesince }} ago</small></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if page.has_other_pages %}
+<nav class="pager" aria-label="Pages">
+  {% if page.has_previous %}<a href="?status={{ active_tab }}&amp;q={{ q|urlencode }}&amp;page={{ page.previous_page_number }}">← Newer</a>{% endif %}
+  <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a href="?status={{ active_tab }}&amp;q={{ q|urlencode }}&amp;page={{ page.next_page_number }}">Older →</a>{% endif %}
+</nav>
+{% endif %}
+{% else %}
+<div class="empty rise" style="--i:2"><b>{% if q %}Nothing matches "{{ q }}"{% else %}No orders here yet{% endif %}</b>{% if q %}Try a name, email or reference like AX-2611-K7QM.{% else %}New bookings from the website appear here automatically.{% endif %}</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "founder/base.html" %}
+{% load static %}
+{% block page_title %}Overview{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div>
+    <p class="eyebrow">Founder dashboard</p>
+    <h1>{{ greeting }}, <em>{{ founder_first }}.</em></h1>
+    <p class="sub">{{ today|date:"l, j F Y" }} · Dhaka</p>
+  </div>
+  <div class="btns">
+    {% if stats.new %}<a class="btn btn-primary" href="{% url 'founder:orders' %}?status=new">Reply to {{ stats.new }} new booking{{ stats.new|pluralize }} <span class="arr">→</span></a>{% endif %}
+    <a class="btn btn-ghost" href="{% url 'founder:project_add' %}">Add demo project</a>
+  </div>
+</div>
+
+<section class="hero3d rise" style="--i:1" aria-labelledby="chartTitle">
+  <div class="hero3d-head">
+    <div>
+      <p class="label" id="chartTitle">Bookings · last 6 months</p>
+      <p class="hero3d-num"><span data-count="{{ series_total }}">{{ series_total }}</span> booking{{ series_total|pluralize }}</p>
+    </div>
+    <p class="hero3d-delta">This month <b>{{ this_month }}</b> · Last month <b>{{ last_month }}</b></p>
+  </div>
+  <div class="stage3d" id="barsStage">
+    <canvas data-3d="bars" data-source="seriesData" data-overlay="barsOverlay" aria-hidden="true"></canvas>
+    <div class="b3-overlay" id="barsOverlay" aria-hidden="true"></div>
+    <ol class="bars2d" aria-label="Bookings per month">
+      {% for m in series %}<li><span>{{ m.label }}</span><b style="--h:{{ m.pct }}%"></b><em>{{ m.value }}</em></li>{% endfor %}
+    </ol>
+  </div>
+  {{ series|json_script:"seriesData" }}
+</section>
+
+<dl class="kpis">
+  <div class="kpi rise{% if stats.new %} hot{% endif %}" style="--i:2"><dt>New bookings</dt><dd data-count="{{ stats.new }}">{{ stats.new }}</dd><p>Waiting for your reply</p></div>
+  <div class="kpi rise" style="--i:3"><dt>Active projects</dt><dd data-count="{{ stats.active }}">{{ stats.active }}</dd><p>Contacted, confirmed or in progress</p></div>
+  <div class="kpi rise" style="--i:4"><dt>Completed</dt><dd data-count="{{ stats.completed }}">{{ stats.completed }}</dd><p>Earned {{ earned_display|default:"৳ 0" }} from quotes</p></div>
+  <div class="kpi rise" style="--i:5"><dt>Open pipeline</dt><dd data-count="{{ pipeline }}" data-format="bdt">{{ pipeline_display|default:"৳ 0" }}</dd><p>Quotes, or budgets where no quote yet</p></div>
+</dl>
+
+<div class="grid2">
+  <section class="panel rise" style="--i:6">
+    <div class="panel-h"><h2>Latest bookings</h2><a href="{% url 'founder:orders' %}">All orders →</a></div>
+    {% if recent %}
+    <ul class="list">
+      {% for b in recent %}
+      <li><a href="{% url 'founder:order' b.reference %}">
+        <b>{{ b.name }}{% if b.company %} · {{ b.company }}{% endif %}</b>
+        <span class="st st-{{ b.status }}">{{ b.get_status_display }}</span>
+        <small>{{ b.reference }} · {{ b.services_display }} · {{ b.created_at|timesince }} ago</small>
+      </a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty"><b>No bookings yet</b>When a client books on the website, it shows up here and in your email.</div>
+    {% endif %}
+  </section>
+
+  <div class="stack">
+    <section class="panel rise" style="--i:7">
+      <div class="panel-h"><h2>Pipeline</h2><span class="label">{{ stats.total }} total</span></div>
+      {% if stats.total %}
+      <div class="strip" aria-hidden="true">{% for s in strip %}{% if s.count %}<i class="st-{{ s.key }}" style="--w:{{ s.count }}"></i>{% endif %}{% endfor %}</div>
+      <ul class="strip-legend">{% for s in strip %}<li class="st-{{ s.key }}"><span>{{ s.label }}</span><b>{{ s.count }}</b></li>{% endfor %}</ul>
+      {% else %}
+      <p class="muted">Your pipeline fills in as bookings arrive.</p>
+      {% endif %}
+    </section>
+
+    <section class="panel rise" style="--i:8">
+      <div class="panel-h"><h2>Client messages</h2><span class="label">{{ client_count }} client account{{ client_count|pluralize }}</span></div>
+      {% if inbox %}
+      <ul class="list">
+        {% for m in inbox %}
+        <li><a href="{% url 'founder:order' m.booking.reference %}#thread">
+          <b>{{ m.booking.name }}</b><small>{{ m.booking.reference }} · {{ m.created_at|timesince }} ago</small>
+          <q>{{ m.body|truncatechars:90 }}</q>
+        </a></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">No messages yet. Clients can write to you from their dashboard.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block dash_scripts %}
+<script src="{% static 'vendor/three.min.js' %}" defer></script>
+<script src="{% static 'js/dash3d.js' %}" defer></script>
+{% endblock %}

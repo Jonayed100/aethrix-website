@@ -1,0 +1,32 @@
+{% extends "founder/base.html" %}
+{% block page_title %}{% if project %}Edit {{ project.title }}{% else %}Add demo project{% endif %}{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div><p class="eyebrow"><a href="{% url 'founder:projects' %}" style="color:inherit">Demo projects</a> / {% if project %}Edit{% else %}New{% endif %}</p>
+  <h1>{% if project %}{{ project.title }}{% else %}Add a <em>demo project.</em>{% endif %}</h1></div>
+</div>
+
+<section class="panel rise" style="--i:1;max-width:760px">
+  <form class="dform" method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<p class="form-err">{{ form.non_field_errors.0 }}</p>{% endif %}
+    <div class="row2">
+      {% include "dash/_field.html" with f=form.title %}
+      {% include "dash/_field.html" with f=form.category %}
+    </div>
+    {% include "dash/_field.html" with f=form.summary %}
+    {% include "dash/_field.html" with f=form.live_url %}
+    {% include "dash/_field.html" with f=form.tech_stack %}
+    <div class="row2">
+      {% include "dash/_field.html" with f=form.slug label="Web address name" %}
+      {% include "dash/_field.html" with f=form.sort_order %}
+    </div>
+    <label class="check">{{ form.is_published }} Show on the website</label>
+    <div class="btns">
+      <button class="btn btn-primary" type="submit">{% if project %}Save changes{% else %}Add project{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'founder:projects' %}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

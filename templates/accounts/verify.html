@@ -1,0 +1,16 @@
+{% extends "accounts/auth_base.html" %}
+{% block page_title %}{% if ok %}Email verified{% else %}Link expired{% endif %}{% endblock %}
+
+{% block card %}
+{% if ok %}
+<p class="eyebrow">Email verified</p>
+<h1>You're <em>all set.</em></h1>
+<p>{{ verified.email }} is verified.{% if claimed %} We added {{ claimed }} earlier booking{{ claimed|pluralize }} to your dashboard.{% endif %}</p>
+<a class="btn btn-primary" href="{% if user.is_authenticated %}{% url 'portal:dashboard' %}{% else %}{% url 'accounts:login' %}{% endif %}">Open my dashboard <span class="arr">→</span></a>
+{% else %}
+<p class="eyebrow">Verification</p>
+<h1>This link <em>doesn't work.</em></h1>
+<p>It may be older than 7 days or already replaced by a newer one. Log in and send a new link from your dashboard.</p>
+<a class="btn btn-primary" href="{% url 'accounts:login' %}">Log in <span class="arr">→</span></a>
+{% endif %}
+{% endblock %}

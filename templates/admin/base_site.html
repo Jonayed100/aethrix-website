@@ -1,0 +1,37 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | Project Aethrix admin{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  :root, html[data-theme="light"], html[data-theme="dark"] {
+    --primary: #ee1c34;
+    --secondary: #7e0a19;
+    --accent: #ff7a45;
+    --primary-fg: #fff;
+    --header-color: #f4ecea;
+    --header-branding-color: #fff;
+    --header-bg: #120808;
+    --header-link-color: #f4ecea;
+    --breadcrumbs-bg: #7e0a19;
+    --link-fg: #c8102a;
+    --link-hover-color: #7e0a19;
+    --link-selected-fg: #7e0a19;
+    --button-bg: #ee1c34;
+    --button-hover-bg: #7e0a19;
+    --default-button-bg: #7e0a19;
+    --default-button-hover-bg: #ee1c34;
+    --object-tools-bg: #7e0a19;
+    --object-tools-hover-bg: #ee1c34;
+  }
+  html[data-theme="dark"] { --link-fg: #ff6b7d; --link-hover-color: #ffa3ae; }
+  #branding h1 { font-weight: 800; letter-spacing: .06em; }
+</style>
+{% endblock %}
+
+{% block branding %}
+<div id="site-name"><a href="{% url 'admin:index' %}">PROJECT AETHRIX · Admin</a></div>
+{% if user.is_anonymous %}{% include "admin/color_theme_toggle.html" %}{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

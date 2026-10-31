@@ -1,0 +1,27 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Project Aethrix · Websites, apps and AI chatbots in Dhaka{% endblock %}</title>
+  <meta name="description" content="{% block description %}Project Aethrix is a Dhaka studio founded by {{ FOUNDER_NAME }}. We build websites, apps and AI chatbots. Explore our demo projects and book your project online.{% endblock %}">
+  <meta name="theme-color" content="#0b0606">
+  <link rel="canonical" href="{{ SITE_URL }}{{ request.path }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ SITE_NAME }}">
+  <meta property="og:title" content="{% block og_title %}Project Aethrix · Websites, apps and AI chatbots{% endblock %}">
+  <meta property="og:description" content="We build websites, apps and AI chatbots. Founded by {{ FOUNDER_NAME }} in Dhaka.">
+  <meta property="og:url" content="{{ SITE_URL }}{{ request.path }}">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{% block body %}{% endblock %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

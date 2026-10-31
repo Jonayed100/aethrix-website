@@ -1,0 +1,21 @@
+{% extends "accounts/auth_base.html" %}
+{% block page_title %}Founder{% endblock %}
+{% block auth_mode %} founder-mode{% endblock %}
+{% block gate_mode %}founder{% endblock %}
+{% block art_copy %}<p>Restricted area</p><strong>Project Aethrix command center.</strong>{% endblock %}
+{% block top_right %}<span class="lock">Founder only</span>{% endblock %}
+
+{% block card %}
+<p class="eyebrow">Founder dashboard</p>
+<h1>Founder <em>sign in.</em></h1>
+<p>Only the founder account can open this dashboard.</p>
+<form class="dform" method="post" novalidate>
+  {% csrf_token %}
+  {% if error %}<p class="form-err" role="alert">{{ error }}</p>{% endif %}
+  {% for e in form.non_field_errors %}<p class="form-err" role="alert">{{ e }}</p>{% endfor %}
+  {% include "dash/_field.html" with f=form.email label="Email" %}
+  {% include "dash/_field.html" with f=form.password label="Password" %}
+  <button class="btn btn-primary" type="submit">Enter dashboard <span class="arr">→</span></button>
+</form>
+<div class="auth-links"><a href="{% url 'accounts:password_forgot' %}">Forgot password?</a></div>
+{% endblock %}
