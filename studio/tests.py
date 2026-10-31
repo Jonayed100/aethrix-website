@@ -56,14 +56,29 @@ class PublicSiteTests(TestCase):
         self.assertEqual(self.client.get(reverse("studio:project", args=["secret-draft"])).status_code, 404)
         self.assertEqual(self.client.get("/projects/nothing-here/").status_code, 404)
 
-    def test_signed_in_client_sees_dashboard_and_order_buttons(self):
+    def test_signed_in_client_sees_dashboard_order_and_logout(self):
         user = User.objects.create_user("c", "c@example.com", "Strong-pass-123", first_name="Nadia")
         Profile.objects.create(user=user, phone="01800000000")
         self.client.force_login(user)
         page = self.client.get(reverse("studio:home"))
         self.assertContains(page, "My dashboard")
+        self.assertContains(page, ">Log out<")
         self.assertContains(page, reverse("portal:new_order"))
         self.assertNotContains(page, ">Sign up<")
+
+    def test_founder_and_admin_see_the_site_like_visitors(self):
+        from django.conf import settings
+        founder = User.objects.create_superuser("f", "projectaethrix@gmail.com", "Founder-pass-123")
+        admin = User.objects.create_user("a", "admin@example.com", "Admin-pass-123", is_staff=True)
+        for person in (founder, admin):
+            self.client.force_login(person)
+            for url in [reverse("studio:home"), reverse("studio:project", args=["floodlit"])]:
+                html = self.client.get(url).content.decode()
+                self.assertIn(">Log in<", html)
+                self.assertIn(">Sign up<", html)
+                self.assertNotIn("My dashboard", html)
+                self.assertNotIn("/" + settings.FOUNDER_URL, html)
+                self.assertNotIn("/" + settings.ADMIN_PANEL_URL, html)
 
     def test_old_public_booking_form_is_gone(self):
         self.assertEqual(self.client.post("/book/", {"name": "x"}).status_code, 404)

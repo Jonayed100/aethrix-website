@@ -128,3 +128,33 @@ class AdminCreateForm(forms.Form):
         )
         Profile.objects.create(user=user, phone=d["phone"].strip(), email_verified=True)
         return user
+
+
+class AdminEditForm(forms.Form):
+    """The founder edits an admin's name and phone."""
+
+    name = forms.CharField(label="Full name", max_length=120)
+    phone = forms.CharField(label="Phone number", max_length=40, required=False, widget=forms.TextInput(attrs={"type": "tel"}))
+
+
+class AdminPasswordForm(forms.Form):
+    """The founder gives an admin a new password (for example, if they forgot it)."""
+
+    password1 = forms.CharField(label="New password", strip=False, widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}))
+    password2 = forms.CharField(label="Type it again", strip=False, widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}))
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned = super().clean()
+        p1, p2 = cleaned.get("password1"), cleaned.get("password2")
+        if p1 and p2 and p1 != p2:
+            self.add_error("password2", "The two passwords don't match.")
+        elif p1:
+            try:
+                password_validation.validate_password(p1, self.user)
+            except forms.ValidationError as exc:
+                self.add_error("password1", exc)
+        return cleaned

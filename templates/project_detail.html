@@ -85,11 +85,9 @@
         <p class="lede">Tell us about your business. We'll plan it with you, build it, and you follow every step in your own dashboard.</p>
       </div>
       <div class="btns">
-        {% if not user.is_authenticated %}
+        {% if not client_user %}
         <a class="btn btn-primary magnet" href="{% url 'accounts:signup' %}">Sign up and order <span class="arr">→</span></a>
         <a class="btn btn-ghost magnet" href="{% url 'accounts:login' %}">Log in</a>
-        {% elif is_team %}
-        <a class="btn btn-primary magnet" href="{{ dashboard_url }}">My dashboard <span class="arr">→</span></a>
         {% else %}
         <a class="btn btn-primary magnet" href="{% url 'portal:new_order' %}">Order a project <span class="arr">→</span></a>
         {% endif %}

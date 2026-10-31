@@ -82,7 +82,7 @@ button{font:inherit;color:inherit}
 .nav-cta{padding:10px 16px!important;font-size:.85rem!important}
 .menu-btn{display:none;background:none;border:1px solid var(--line-soft);border-radius:10px;width:42px;height:42px;cursor:pointer;place-items:center}
 .menu-btn span{display:block;width:18px;height:2px;background:var(--bone);box-shadow:0 6px 0 var(--bone),0 -6px 0 var(--bone)}
-.nav-panel{border-top:1px solid var(--line-soft);padding-block:12px 18px;display:grid;gap:4px}
+.nav .nav-panel{height:auto;border-top:1px solid var(--line-soft);padding-block:12px 18px;display:grid;align-items:stretch;gap:4px}
 .nav-panel a{text-decoration:none;padding:12px 4px;font:600 1.05rem/1 var(--f-body);border-bottom:1px solid var(--line-soft)}
 .nav-progress{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--red),var(--ember));transform-origin:0 50%;transform:scaleX(0)}
 
@@ -285,11 +285,14 @@ input[type=range]{width:100%;accent-color:var(--red);height:28px}
 
 /* ---------- Nav: Log in / Sign up ---------- */
 .nav-auth{display:flex;align-items:center;gap:8px}
+.nav-out{margin:0;display:flex}
 .nav-btn{padding:10px 16px;font-size:.86rem;white-space:nowrap}
 .nav-btn.btn-primary{box-shadow:0 8px 22px -10px rgba(238,28,52,.9)}
 .nav-panel-auth{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:14px}
 .nav-panel-auth .btn{padding:14px 18px;border-bottom:1px solid transparent}
 .nav-panel-auth .btn:only-child{grid-column:1 / -1}
+.nav-panel-auth form{margin:0;display:grid}
+.nav-panel-auth .btn{white-space:nowrap}
 @media (max-width: 1000px){.nav .wrap{gap:12px}}
 @media (max-width: 560px){
   .nav .wrap{gap:8px}
@@ -297,6 +300,7 @@ input[type=range]{width:100%;accent-color:var(--red);height:28px}
   .nav-btn .arr{display:none}
 }
 @media (max-width: 400px){.nav .brand-text{display:none}}
+@media (max-width: 480px){.nav-out{display:none}}
 
 /* ---------- Demo projects ---------- */
 .proj-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;perspective:1200px}

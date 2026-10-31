@@ -17,7 +17,7 @@ Built with **Python + Django**, **PostgreSQL** (SQLite on your laptop), **Three.
 | **Founder dashboard** (secret address) | **Only you** | Everything admins have, plus money totals, every client's dashboard, the Team page (add/block admins), demo projects editor and CSV export |
 | Backup admin (secret address) | Only you | Django's built-in admin, for rare fixes |
 | Security | — | Private dashboards show "page not found" to everyone else, login rate limits, order rate limits, HTTPS-only cookies, CSRF protection |
-| Tests | — | 68 automated tests (`python manage.py test`) |
+| Tests | — | 77 automated tests (`python manage.py test`) |
 
 ### Who can open what
 
@@ -29,7 +29,9 @@ Built with **Python + Django**, **PostgreSQL** (SQLite on your laptop), **Three.
 | Founder dashboard | ❌ asked to log in | ❌ "page not found" | ❌ "page not found" | ✅ |
 | Backup admin | ❌ | ❌ | ❌ | ✅ |
 
-The website only shows **Log in** and **Sign up** (for clients). Nothing on the site links to the admin or founder dashboards; they live at secret addresses.
+The website only shows **Log in** and **Sign up** (for clients). A signed-in client sees **My dashboard** and **Log out**. The founder and admins always see the website like a visitor: nothing on the site links to the admin or founder dashboards; they live at secret addresses. The website's Log in is for clients only.
+
+**Founder login:** `projectaethrix@gmail.com` with the password you chose. It is set once by `accounts/migrations/0002_founder_login.py` (only the encrypted form is stored). Change it any time on the founder dashboard's Account page.
 
 ---
 
@@ -113,7 +115,7 @@ Log in at **/founder/login/** (or your secret `FOUNDER_URL`).
 - **Overview:** 3D chart of orders for the last 6 months, incoming, pending and completed counts, earnings and open pipeline in taka, latest orders and client messages.
 - **Orders:** tabs **All / Incoming / Pending / Completed / Declined**, search, CSV download. Open an order to update it and message the client.
 - **Clients:** every client with phone number and order counts. **View dashboard** shows that client's dashboard exactly as they see it.
-- **Team (admins):** create admin accounts (name, email, phone, password), copy the admin dashboard link to send them, and **Block / Unblock** any admin.
+- **Team (admins):** create admin accounts (name, email, phone, password) and copy the admin dashboard link to send them. Click **Manage** on any admin to edit their details, give them a new password, block or unblock them, or remove them.
 - **Demo projects:** add, edit, hide and delete projects. Each one has a details page on the website with description, features, roadmap and closing text. Write one feature per line; `Name — text` makes the name bold.
 - **Admin dashboard ↗** (bottom of the menu): open the admin dashboard yourself.
 - **Account:** change your password and see your private addresses.
@@ -237,7 +239,7 @@ aethrix-website/
 
 ```bash
 python manage.py runserver        # start the site locally
-python manage.py test             # run all 68 tests
+python manage.py test             # run all 77 tests
 python manage.py ensure_founder   # create the founder login from .env
 python manage.py check --deploy   # security check before going live
 ```

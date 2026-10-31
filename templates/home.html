@@ -26,9 +26,8 @@
       <p class="hero-sub">A Dhaka studio for web development, application development and AI chatbots. Explore our demo projects, then sign up and order your project in two minutes.</p>
       <div class="btns">
         <a class="btn btn-primary magnet" href="#work">Explore demo projects <span class="arr">→</span></a>
-        {% if not user.is_authenticated %}<a class="btn btn-ghost magnet" href="{% url 'accounts:signup' %}">Sign up &amp; start a project</a>
-        {% elif is_team %}<a class="btn btn-ghost magnet" href="{{ dashboard_url }}">Open my dashboard</a>
-        {% else %}<a class="btn btn-ghost magnet" href="{% url 'portal:new_order' %}">Order a project</a>{% endif %}
+        {% if client_user %}<a class="btn btn-ghost magnet" href="{% url 'portal:new_order' %}">Order a project</a>
+        {% else %}<a class="btn btn-ghost magnet" href="{% url 'accounts:signup' %}">Sign up &amp; start a project</a>{% endif %}
       </div>
     </div>
   </div>
@@ -118,8 +117,7 @@
             <h3>Yours could be next.</h3>
             <p class="proj-sum">A website, an app or an AI chatbot for your business. Sign up, describe it, and follow every step in your dashboard.</p>
             <div class="proj-a">
-              {% if user.is_authenticated and not is_team %}<a class="btn btn-primary" href="{% url 'portal:new_order' %}">Order a project <span class="arr">→</span></a>
-              {% elif user.is_authenticated %}<a class="btn btn-primary" href="{{ dashboard_url }}">My dashboard <span class="arr">→</span></a>
+              {% if client_user %}<a class="btn btn-primary" href="{% url 'portal:new_order' %}">Order a project <span class="arr">→</span></a>
               {% else %}<a class="btn btn-primary" href="{% url 'accounts:signup' %}">Sign up to order <span class="arr">→</span></a>{% endif %}
             </div>
           </div>
@@ -175,7 +173,7 @@
     <div class="wrap contact-grid">
       <div class="contact-card">
         <p class="eyebrow">Start your project</p>
-        {% if user.is_authenticated and not is_team %}
+        {% if client_user %}
         <h2>Ready for your next <em>project, {{ user_name }}?</em></h2>
         <p class="lede">Order it from your dashboard. Our team is notified straight away and replies within one working day.</p>
         {% else %}
@@ -188,11 +186,9 @@
           <li><b>Track every update</b><span>Progress, messages and delivery in your dashboard.</span></li>
         </ol>
         <div class="btns">
-          {% if not user.is_authenticated %}
+          {% if not client_user %}
           <a class="btn btn-primary magnet" href="{% url 'accounts:signup' %}">Sign up, it's free <span class="arr">→</span></a>
           <a class="btn btn-ghost magnet" href="{% url 'accounts:login' %}">I have an account · Log in</a>
-          {% elif is_team %}
-          <a class="btn btn-primary magnet" href="{{ dashboard_url }}">Open my dashboard <span class="arr">→</span></a>
           {% else %}
           <a class="btn btn-primary magnet" href="{% url 'portal:new_order' %}">Order a new project <span class="arr">→</span></a>
           <a class="btn btn-ghost magnet" href="{% url 'portal:dashboard' %}">My dashboard</a>

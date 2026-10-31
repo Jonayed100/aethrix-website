@@ -240,6 +240,56 @@ class TeamTests(TestCase):
         self.assertTrue(msg.from_founder)
 
 
+class ManageAdminTests(TestCase):
+    """The founder controls each admin: edit, new password, block, remove."""
+
+    def setUp(self):
+        cache.clear()
+        self.founder = User.objects.create_superuser("f", "projectaethrix@gmail.com", "Founder-pass-123")
+        self.admin = make_admin()
+        self.url = reverse("founder:team_member", args=[self.admin.pk])
+        self.client.force_login(self.founder)
+
+    def test_only_founder_can_open(self):
+        self.assertEqual(self.client.get(self.url).status_code, 200)
+        self.client.force_login(self.admin)
+        self.assertEqual(self.client.get(self.url).status_code, 404)
+
+    def test_edit_details(self):
+        self.client.post(self.url, {"action": "details", "name": "Sakib Rahman", "phone": "01811111111"})
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.first_name, "Sakib Rahman")
+        self.assertEqual(self.admin.profile.phone, "01811111111")
+
+    def test_new_password(self):
+        self.client.post(self.url, {"action": "password", "password1": "Fresh-admin-2027", "password2": "Fresh-admin-2027"})
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.check_password("Fresh-admin-2027"))
+
+    def test_block_and_unblock(self):
+        self.client.post(self.url, {"action": "block"})
+        self.admin.refresh_from_db()
+        self.assertFalse(self.admin.is_active)
+        self.client.post(self.url, {"action": "unblock"})
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.is_active)
+
+    def test_remove_needs_confirmation_and_keeps_order_updates(self):
+        booking = make_booking()
+        OrderMessage.objects.create(booking=booking, author=self.admin, from_founder=True, body="Design ready.")
+        self.client.post(self.url, {"action": "remove"})
+        self.assertTrue(User.objects.filter(pk=self.admin.pk).exists())
+        response = self.client.post(self.url, {"action": "remove", "confirm": "yes"})
+        self.assertRedirects(response, reverse("founder:team"))
+        self.assertFalse(User.objects.filter(pk=self.admin.pk).exists())
+        self.assertTrue(OrderMessage.objects.filter(body="Design ready.", author=None).exists())
+
+    def test_cannot_manage_founder_or_clients_here(self):
+        client_user = User.objects.create_user("c", "client@example.com", "Client-pass-123")
+        for pk in (self.founder.pk, client_user.pk):
+            self.assertEqual(self.client.get(reverse("founder:team_member", args=[pk])).status_code, 404)
+
+
 class ClientViewTests(TestCase):
     """The founder can open any client's dashboard."""
 

@@ -4,7 +4,7 @@
 {% block content %}
 <div class="topline rise">
   <div><p class="eyebrow">Team</p><h1>Your <em>admins.</em></h1>
-  <p class="sub">Admins open the admin dashboard: they receive orders, update progress and message clients. They can't see money totals, demo projects, clients or this page.</p></div>
+  <p class="sub">Add, edit, block or remove admins. Admins open the admin dashboard: they receive orders, update progress and message clients. They can't see money totals, demo projects, the client list or this page.</p></div>
 </div>
 
 <div class="grid2 grid2-even" style="margin-top:0">
@@ -28,7 +28,7 @@
     <ol class="next-steps" style="margin-top:20px">
       <li><b>Create the account</b><span>Fill in the form. The account works straight away.</span></li>
       <li><b>Share the link</b><span>Your admin signs in with their email and password.</span></li>
-      <li><b>Block any time</b><span>Click "Block" below to stop someone signing in. Their past updates stay.</span></li>
+      <li><b>Control any time</b><span>Click "Manage" to edit an admin, give them a new password, block them or remove them.</span></li>
     </ol>
   </section>
 </div>
@@ -42,12 +42,12 @@
       <tbody>
         {% for m in members %}
         <tr>
-          <td><b>{{ m.first_name|default:m.email }}</b><small>{{ m.email }}</small></td>
+          <td><a class="row-link" href="{% url 'founder:team_member' m.pk %}"><b>{{ m.first_name|default:m.email }}</b></a><small>{{ m.email }}</small></td>
           <td>{{ m.profile.phone|default:"—" }}</td>
           <td class="num">{{ m.updates }}</td>
           <td>{% if m.last_login %}{{ m.last_login|timesince }} ago{% else %}<span class="muted">Never</span>{% endif %}</td>
           <td>{% if m.is_active %}<span class="st st-completed">Active</span>{% else %}<span class="st st-declined">Blocked</span>{% endif %}</td>
-          <td><form method="post" action="{% url 'founder:team_toggle' m.pk %}">{% csrf_token %}<button class="btn {% if m.is_active %}btn-danger{% else %}btn-ghost{% endif %} btn-sm" type="submit">{% if m.is_active %}Block{% else %}Unblock{% endif %}</button></form></td>
+          <td><div class="row-actions"><a class="btn btn-ghost btn-sm" href="{% url 'founder:team_member' m.pk %}">Manage</a><form method="post" action="{% url 'founder:team_toggle' m.pk %}">{% csrf_token %}<button class="btn {% if m.is_active %}btn-danger{% else %}btn-ghost{% endif %} btn-sm" type="submit">{% if m.is_active %}Block{% else %}Unblock{% endif %}</button></form></div></td>
         </tr>
         {% endfor %}
       </tbody>

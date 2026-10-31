@@ -30,7 +30,7 @@ from accounts.utils import (absolute, claim_bookings, display_name, is_founder, 
 from studio.emails import send_founder_message_email, send_invite_email, send_order_update_email
 from studio.models import Booking, OrderMessage, Project, format_bdt
 
-from .forms import AdminCreateForm, FounderMessageForm, OrderForm, ProjectForm
+from .forms import AdminCreateForm, AdminEditForm, AdminPasswordForm, FounderMessageForm, OrderForm, ProjectForm
 
 S = Booking.Status
 User = get_user_model()
@@ -381,3 +381,47 @@ def team_toggle(request, pk):
     member.save(update_fields=["is_active"])
     messages.success(request, f"{display_name(member)} is now {'active' if member.is_active else 'blocked from signing in'}.")
     return redirect("founder:team")
+
+
+@founder_view
+def team_member(request, pk):
+    """Manage one admin: edit details, set a new password, block or unblock, or remove."""
+    member = get_object_or_404(User.objects.select_related("profile"), pk=pk, is_staff=True, is_superuser=False)
+    profile = Profile.for_user(member)
+    action = request.POST.get("action")
+    edit_form = AdminEditForm(request.POST if action == "details" else None,
+                              initial={"name": member.first_name, "phone": profile.phone})
+    password_form = AdminPasswordForm(member, request.POST if action == "password" else None)
+    name = display_name(member)
+
+    if action == "details" and edit_form.is_valid():
+        member.first_name = edit_form.cleaned_data["name"].strip()[:150]
+        member.save(update_fields=["first_name"])
+        profile.phone = edit_form.cleaned_data["phone"].strip()
+        profile.save(update_fields=["phone"])
+        messages.success(request, "Admin details saved.")
+        return redirect("founder:team_member", pk=member.pk)
+    if action == "password" and password_form.is_valid():
+        member.set_password(password_form.cleaned_data["password1"])
+        member.save(update_fields=["password"])
+        messages.success(request, f"New password set for {name}. Send it to them privately.")
+        return redirect("founder:team_member", pk=member.pk)
+    if action in ("block", "unblock"):
+        member.is_active = action == "unblock"
+        member.save(update_fields=["is_active"])
+        messages.success(request, f"{name} is now {'active' if member.is_active else 'blocked from signing in'}.")
+        return redirect("founder:team_member", pk=member.pk)
+    if action == "remove":
+        if request.POST.get("confirm") == "yes":
+            email = member.email
+            member.delete()
+            messages.success(request, f"{name} ({email}) was removed. Their past order updates stay on the orders.")
+            return redirect("founder:team")
+        messages.error(request, "Tick the box to confirm you want to remove this admin.")
+
+    updates = OrderMessage.objects.filter(author=member, from_founder=True).select_related("booking").order_by("-created_at")
+    return render(request, "founder/team_member.html", {
+        "section": "team", "member": member, "profile": profile,
+        "edit_form": edit_form, "password_form": password_form,
+        "update_count": updates.count(), "recent_updates": updates[:8],
+    })

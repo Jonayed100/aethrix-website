@@ -109,14 +109,19 @@ class LoginTests(TestCase):
                                     {"email": "client@example.com", "password": "Client-pass-123", "next": "https://evil.example/"})
         self.assertRedirects(response, reverse("portal:dashboard"))
 
-    def test_founder_using_client_login_lands_in_founder_dashboard(self):
-        response = self.client.post(reverse("accounts:login"), {"email": "projectaethrix@gmail.com", "password": "Founder-pass-123"})
-        self.assertRedirects(response, reverse("founder:overview"))
-
-    def test_admin_using_client_login_lands_in_admin_dashboard(self):
+    def test_client_login_is_for_clients_only(self):
         User.objects.create_user("a", "admin@example.com", "Admin-pass-123", is_staff=True)
-        response = self.client.post(reverse("accounts:login"), {"email": "admin@example.com", "password": "Admin-pass-123"})
-        self.assertRedirects(response, reverse("adminpanel:overview"))
+        for email, password in [("projectaethrix@gmail.com", "Founder-pass-123"), ("admin@example.com", "Admin-pass-123")]:
+            response = self.client.post(reverse("accounts:login"), {"email": email, "password": password})
+            self.assertContains(response, "This login is for clients.")
+            self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_founder_and_admin_still_see_login_and_signup_pages(self):
+        self.client.force_login(self.founder)
+        self.assertEqual(self.client.get(reverse("accounts:login")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("accounts:signup")).status_code, 200)
+        self.client.force_login(self.client_user)
+        self.assertRedirects(self.client.get(reverse("accounts:login")), reverse("portal:dashboard"))
 
     def test_admin_login_page_accepts_team_only(self):
         User.objects.create_user("a", "admin@example.com", "Admin-pass-123", is_staff=True)
@@ -168,3 +173,28 @@ class PasswordResetTests(TestCase):
         self.client.logout()
         again = self.client.get(path, follow=True)
         self.assertContains(again, "has expired")
+
+
+class FounderLoginMigrationTests(TestCase):
+    """The one-time step that sets the founder login to projectaethrix@gmail.com / Aethrix2026!."""
+
+    def run_step(self):
+        import importlib
+        from django.apps import apps
+        step = importlib.import_module("accounts.migrations.0002_founder_login")
+        with self.settings(TESTING=False):
+            step.set_founder_login(apps, None)
+
+    def test_creates_founder_with_chosen_password(self):
+        self.run_step()
+        founder = User.objects.get(email="projectaethrix@gmail.com")
+        self.assertTrue(founder.is_superuser and founder.is_staff and founder.is_active)
+        self.assertTrue(founder.check_password("Aethrix2026!"))
+        response = self.client.post(reverse("founder:login"), {"email": "projectaethrix@gmail.com", "password": "Aethrix2026!"})
+        self.assertRedirects(response, reverse("founder:overview"))
+
+    def test_updates_existing_founder_password(self):
+        User.objects.create_superuser("old", "ProjectAethrix@gmail.com", "Old-founder-pass-1")
+        self.run_step()
+        self.assertEqual(User.objects.filter(email__iexact="projectaethrix@gmail.com").count(), 1)
+        self.assertTrue(User.objects.get(username="old").check_password("Aethrix2026!"))

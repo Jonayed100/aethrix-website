@@ -23,6 +23,7 @@ urlpatterns = [
     path("clients/", views.clients, name="clients"),
     path("clients/<int:pk>/", views.client_detail, name="client"),
     path("team/", views.team, name="team"),
+    path("team/<int:pk>/", views.team_member, name="team_member"),
     path("team/<int:pk>/toggle/", views.team_toggle, name="team_toggle"),
     path("account/", views.account, name="account"),
 ]

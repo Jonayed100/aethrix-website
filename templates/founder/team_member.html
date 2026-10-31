@@ -1,0 +1,76 @@
+{% extends "founder/base.html" %}
+{% block page_title %}{{ member.first_name|default:member.email }}{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div>
+    <p class="eyebrow"><a href="{% url 'founder:team' %}" style="color:inherit">Team</a> / {{ member.first_name|default:member.email }}</p>
+    <h1>{{ member.first_name|default:member.email }}</h1>
+    <p class="sub">{{ member.email }} · admin since {{ member.date_joined|date:"j M Y" }}{% if member.last_login %} · last sign-in {{ member.last_login|timesince }} ago{% endif %}</p>
+  </div>
+  {% if member.is_active %}<span class="st st-completed">Active</span>{% else %}<span class="st st-declined">Blocked</span>{% endif %}
+</div>
+
+<div class="grid2 grid2-even" style="margin-top:0">
+  <section class="panel rise" style="--i:1">
+    <div class="panel-h"><h2>Details</h2></div>
+    <form class="dform" method="post" novalidate>
+      {% csrf_token %}<input type="hidden" name="action" value="details">
+      {% include "dash/_field.html" with f=edit_form.name %}
+      {% include "dash/_field.html" with f=edit_form.phone %}
+      <div class="field"><label>Email</label><p class="mono" style="margin:0">{{ member.email }}</p></div>
+      <div class="btns"><button class="btn btn-primary" type="submit">Save details</button></div>
+    </form>
+  </section>
+
+  <section class="panel rise" style="--i:2">
+    <div class="panel-h"><h2>New password</h2><span class="label">If they forgot it</span></div>
+    <form class="dform" method="post" novalidate>
+      {% csrf_token %}<input type="hidden" name="action" value="password">
+      {% include "dash/_field.html" with f=password_form.password1 %}
+      {% include "dash/_field.html" with f=password_form.password2 %}
+      <div class="btns"><button class="btn btn-primary" type="submit">Set new password</button></div>
+      <p class="muted" style="font-size:.82rem;margin:0">Passwords are stored encrypted. Nobody, including you, can read them, so send the new one to your admin yourself.</p>
+    </form>
+  </section>
+</div>
+
+<div class="grid2 grid2-even">
+  <section class="panel rise" style="--i:3">
+    <div class="panel-h"><h2>Access</h2></div>
+    {% if member.is_active %}
+    <p class="muted" style="margin:0 0 14px">{{ member.first_name|default:"This admin" }} can sign in to the admin dashboard. Block them to stop that straight away.</p>
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="block"><button class="btn btn-danger" type="submit">Block sign-in</button></form>
+    {% else %}
+    <p class="muted" style="margin:0 0 14px">This admin is blocked and can't sign in. Unblock to give access back.</p>
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="unblock"><button class="btn btn-primary" type="submit">Unblock</button></form>
+    {% endif %}
+  </section>
+
+  <section class="panel rise danger" style="--i:4">
+    <div class="panel-h"><h2>Remove admin</h2></div>
+    <p class="muted" style="margin:0 0 14px">Deletes this admin's account for good. Orders stay, and their past updates stay on each order.</p>
+    <form class="dform" method="post">
+      {% csrf_token %}<input type="hidden" name="action" value="remove">
+      <label class="check"><input type="checkbox" name="confirm" value="yes"> Yes, remove {{ member.first_name|default:member.email }}</label>
+      <div class="btns"><button class="btn btn-danger" type="submit">Remove admin</button></div>
+    </form>
+  </section>
+</div>
+
+<section class="panel rise" style="--i:5;margin-top:18px">
+  <div class="panel-h"><h2>Their recent order updates</h2><span class="label">{{ update_count }} in total</span></div>
+  {% if recent_updates %}
+  <ul class="list">
+    {% for m in recent_updates %}
+    <li><a href="{% url 'founder:order' m.booking.reference %}#thread">
+      <b>{{ m.booking.display_title }}</b><small>{{ m.booking.reference }} · {{ m.created_at|timesince }} ago</small>
+      <q>{{ m.body|truncatechars:110 }}</q>
+    </a></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No order updates yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

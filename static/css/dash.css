@@ -289,6 +289,14 @@
 .dl-wide{grid-template-columns:auto 1fr auto 1fr}
 .viewing{border-color:var(--line)}
 
+/* Buttons side by side in a table row */
+.row-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+.row-actions form{margin:0}
+
+/* Remove admin (danger zone) */
+.danger{border-color:rgba(255,122,69,.45)}
+.danger .panel-h h2{color:var(--ember)}
+
 /* Banner (e.g. verify email) */
 .banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;padding:14px 18px;margin-bottom:20px;border:1px solid rgba(242,193,78,.5);background:rgba(242,193,78,.07)}
 .banner p{margin:0;font-size:.92rem}

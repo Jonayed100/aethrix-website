@@ -28,8 +28,9 @@ def _next_url(request, default):
     return default
 
 
-def _login(request, template, allow=None, landing=None, extra=None):
-    """Shared sign-in. `allow` limits who may sign in here; `landing` is where they go after."""
+def _login(request, template, allow=None, landing=None, extra=None, refused=None):
+    """Shared sign-in. `allow` limits who may sign in here; `landing` is where they go after.
+    `refused` is shown when the email and password are right but the account belongs elsewhere."""
     form = LoginForm(request, data=request.POST or None)
     key = f"login:{client_ip(request)}"
     error = None
@@ -45,16 +46,19 @@ def _login(request, template, allow=None, landing=None, extra=None):
         else:
             hit(key, LOGIN_WINDOW)
             if not form.errors:
-                error = LoginForm.error_messages["invalid"]
+                error = refused or LoginForm.error_messages["invalid"]
     context = {"form": form, "error": error, "next": request.GET.get("next", "")}
     context.update(extra or {})
     return render(request, template, context)
 
 
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect(home_url_for(request.user))
-    return _login(request, "accounts/login.html")
+    """Client log in (the website's Log in button). Only client accounts sign in here;
+    the founder and admins use their own private links."""
+    if request.user.is_authenticated and not is_team(request.user):
+        return redirect("portal:dashboard")
+    return _login(request, "accounts/login.html", allow=lambda u: not is_team(u), landing=None,
+                  refused="This login is for clients. Please use your private dashboard link to sign in.")
 
 
 def founder_login_view(request):
@@ -82,8 +86,9 @@ def logout_view(request):
 
 
 def signup_view(request):
-    if request.user.is_authenticated:
-        return redirect(home_url_for(request.user))
+    """Client sign up (the website's Sign up button)."""
+    if request.user.is_authenticated and not is_team(request.user):
+        return redirect("portal:dashboard")
     initial = {"email": request.GET.get("email", ""), "name": request.GET.get("name", "")}
     form = SignupForm(request.POST or None, initial=initial)
     error = None
