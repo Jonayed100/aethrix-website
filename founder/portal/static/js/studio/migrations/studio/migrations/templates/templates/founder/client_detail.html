@@ -1,0 +1,32 @@
+{% extends "founder/base.html" %}
+{% load static %}
+{% block page_title %}{{ client.first_name|default:client.email }}{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div>
+    <p class="eyebrow"><a href="{% url 'founder:clients' %}" style="color:inherit">Clients</a> / {{ client.first_name|default:client.email }}</p>
+    <h1>{{ client.first_name|default:client.email }}'s <em>dashboard.</em></h1>
+    <p class="sub">Exactly what this client sees when they log in. Click any order to update it.</p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{% url 'founder:orders' %}?q={{ client.email|urlencode }}">Their orders in Orders →</a>
+</div>
+
+<section class="panel rise viewing" style="--i:1">
+  <dl class="dl dl-wide">
+    <dt>Email</dt><dd><span class="copy-row"><a href="mailto:{{ client.email }}">{{ client.email }}</a><button class="copy" type="button" data-copy="{{ client.email }}">Copy</button></span></dd>
+    <dt>Phone</dt><dd>{% if profile.phone %}<span class="copy-row">{{ profile.phone }}<button class="copy" type="button" data-copy="{{ profile.phone }}">Copy</button></span>{% else %}<span class="muted">Not given</span>{% endif %}</dd>
+    <dt>Company</dt><dd>{{ profile.company|default:"—" }}</dd>
+    <dt>Joined</dt><dd>{{ client.date_joined|date:"j M Y" }}{% if client.last_login %} · last sign-in {{ client.last_login|timesince }} ago{% endif %}</dd>
+  </dl>
+</section>
+
+<div class="client-view" style="margin-top:18px">
+  {% include "portal/_overview_body.html" %}
+</div>
+{% endblock %}
+
+{% block dash_scripts %}
+<script src="{% static 'vendor/three.min.js' %}" defer></script>
+<script src="{% static 'js/dash3d.js' %}" defer></script>
+{% endblock %}

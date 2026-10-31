@@ -1,0 +1,60 @@
+{% extends "founder/base.html" %}
+{% block page_title %}Team{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div><p class="eyebrow">Team</p><h1>Your <em>admins.</em></h1>
+  <p class="sub">Admins open the admin dashboard: they receive orders, update progress and message clients. They can't see money totals, demo projects, clients or this page.</p></div>
+</div>
+
+<div class="grid2 grid2-even" style="margin-top:0">
+  <section class="panel rise" style="--i:1">
+    <div class="panel-h"><h2>Add an admin</h2></div>
+    <form class="dform" method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<p class="form-err">{{ form.non_field_errors.0 }}</p>{% endif %}
+      {% include "dash/_field.html" with f=form.name %}
+      {% include "dash/_field.html" with f=form.email %}
+      {% include "dash/_field.html" with f=form.phone %}
+      {% include "dash/_field.html" with f=form.password %}
+      <div class="btns"><button class="btn btn-primary" type="submit">Create admin account <span class="arr">→</span></button></div>
+    </form>
+  </section>
+
+  <section class="panel rise" style="--i:2">
+    <div class="panel-h"><h2>Admin dashboard link</h2><span class="label">Private · not on the website</span></div>
+    <p class="muted" style="margin:0 0 12px;font-size:.9rem">Send this link, the email and the password to your admin. Anyone without an admin account who opens it sees "page not found".</p>
+    <div class="linkbox"><span class="mono">{{ panel_login }}</span><button class="copy" type="button" data-copy="{{ panel_login }}">Copy</button></div>
+    <ol class="next-steps" style="margin-top:20px">
+      <li><b>Create the account</b><span>Fill in the form. The account works straight away.</span></li>
+      <li><b>Share the link</b><span>Your admin signs in with their email and password.</span></li>
+      <li><b>Block any time</b><span>Click "Block" below to stop someone signing in. Their past updates stay.</span></li>
+    </ol>
+  </section>
+</div>
+
+<section class="panel rise" style="--i:3;margin-top:18px">
+  <div class="panel-h"><h2>Admins</h2><span class="label">{{ members|length }} account{{ members|length|pluralize }}</span></div>
+  {% if members %}
+  <div class="tbl-wrap" style="margin:0">
+    <table class="tbl">
+      <thead><tr><th>Admin</th><th>Phone</th><th class="num">Updates posted</th><th>Last sign-in</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for m in members %}
+        <tr>
+          <td><b>{{ m.first_name|default:m.email }}</b><small>{{ m.email }}</small></td>
+          <td>{{ m.profile.phone|default:"—" }}</td>
+          <td class="num">{{ m.updates }}</td>
+          <td>{% if m.last_login %}{{ m.last_login|timesince }} ago{% else %}<span class="muted">Never</span>{% endif %}</td>
+          <td>{% if m.is_active %}<span class="st st-completed">Active</span>{% else %}<span class="st st-declined">Blocked</span>{% endif %}</td>
+          <td><form method="post" action="{% url 'founder:team_toggle' m.pk %}">{% csrf_token %}<button class="btn {% if m.is_active %}btn-danger{% else %}btn-ghost{% endif %} btn-sm" type="submit">{% if m.is_active %}Block{% else %}Unblock{% endif %}</button></form></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><b>No admins yet</b>Add your first admin with the form above.</div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "founder/base.html" %}
+{% block page_title %}Demo projects{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div><p class="eyebrow">Demo projects</p><h1>What clients see in <em>Demo projects.</em></h1><p class="sub">Live projects appear on the website straight away, each with its own details page. Hidden ones stay here.</p></div>
+  <a class="btn btn-primary" href="{% url 'founder:project_add' %}">Add demo project <span class="arr">→</span></a>
+</div>
+
+{% if items %}
+<div class="pgrid">
+  {% for p in items %}
+  <article class="pcard rise{% if not p.is_published %} off{% endif %}" style="--i:{{ forloop.counter }}">
+    <div class="tagline">
+      <span>{{ p.get_category_display }}</span>
+      {% if p.is_published %}<span class="live">Live on site</span>{% else %}<span>Hidden</span>{% endif %}
+      {% if not p.live_url %}<span>Link coming soon</span>{% endif %}
+    </div>
+    <h3>{{ p.title }}</h3>
+    {% if p.summary %}<p>{{ p.summary }}</p>{% endif %}
+    <p class="muted" style="font-size:.8rem;margin:0">{{ p.feature_items|length }} feature{{ p.feature_items|length|pluralize }}{% if p.roadmap_items %} · {{ p.roadmap_items|length }} roadmap item{{ p.roadmap_items|length|pluralize }}{% endif %}</p>
+    {% if p.live_url %}<a class="link" href="{{ p.live_url }}" target="_blank" rel="noopener">{{ p.domain }} ↗</a>{% endif %}
+    {% if p.tech_list %}<p class="mono" style="font-size:.74rem">{{ p.tech_list|join:" · " }}</p>{% endif %}
+    <div class="pcard-a">
+      <a class="btn btn-ghost btn-sm" href="{% url 'founder:project_edit' p.pk %}">Edit</a>
+      {% if p.is_published %}<a class="btn btn-ghost btn-sm" href="{{ p.get_absolute_url }}" target="_blank" rel="noopener">View page ↗</a>{% endif %}
+      <form method="post" action="{% url 'founder:project_toggle' p.pk %}">{% csrf_token %}<button class="btn btn-ghost btn-sm" type="submit">{% if p.is_published %}Hide{% else %}Show on site{% endif %}</button></form>
+      <a class="btn btn-danger btn-sm" href="{% url 'founder:project_delete' p.pk %}">Delete</a>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty rise" style="--i:1"><b>No demo projects yet</b>Add your first one, and it appears in the Projects section of the website.</div>
+{% endif %}
+{% endblock %}

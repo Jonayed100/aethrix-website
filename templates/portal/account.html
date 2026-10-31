@@ -1,0 +1,36 @@
+{% extends "portal/base.html" %}
+{% block page_title %}Account{% endblock %}
+
+{% block content %}
+<div class="topline rise"><div><p class="eyebrow">Account</p><h1>Your <em>details.</em></h1><p class="sub">{{ request.user.email }}{% if profile.email_verified %} · verified{% endif %}</p></div></div>
+
+{% if not profile.email_verified %}
+<div class="banner rise">
+  <p><b>Optional:</b> verify your email so we know it's really yours. Your dashboard works either way.</p>
+  <form method="post" action="{% url 'accounts:verify_resend' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-ghost btn-sm" type="submit">Send verification link</button></form>
+</div>
+{% endif %}
+
+<div class="grid2 grid2-even" style="margin-top:0">
+  <section class="panel rise" style="--i:1">
+    <div class="panel-h"><h2>Contact details</h2><span class="label">Used on your orders</span></div>
+    <form class="dform" method="post">
+      {% csrf_token %}<input type="hidden" name="action" value="profile">
+      {% include "dash/_field.html" with f=profile_form.name %}
+      {% include "dash/_field.html" with f=profile_form.phone %}
+      {% include "dash/_field.html" with f=profile_form.company %}
+      <div class="btns"><button class="btn btn-primary" type="submit">Save details</button></div>
+    </form>
+  </section>
+  <section class="panel rise" style="--i:2">
+    <div class="panel-h"><h2>Change password</h2></div>
+    <form class="dform" method="post">
+      {% csrf_token %}<input type="hidden" name="action" value="password">
+      {% include "dash/_field.html" with f=password_form.old_password label="Current password" %}
+      {% include "dash/_field.html" with f=password_form.new_password1 label="New password" %}
+      {% include "dash/_field.html" with f=password_form.new_password2 label="Confirm new password" %}
+      <div class="btns"><button class="btn btn-primary" type="submit">Change password</button></div>
+    </form>
+  </section>
+</div>
+{% endblock %}

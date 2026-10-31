@@ -1,0 +1,21 @@
+{% extends "portal/base.html" %}
+{% load static %}
+{% block page_title %}My orders{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div>
+    <p class="eyebrow">Client dashboard</p>
+    <h1>Welcome, <em>{{ first_name }}.</em></h1>
+    <p class="sub">Order a project, follow its progress, and message the team.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'portal:new_order' %}">Order a new project <span class="arr">→</span></a>
+</div>
+
+{% include "portal/_overview_body.html" %}
+{% endblock %}
+
+{% block dash_scripts %}
+<script src="{% static 'vendor/three.min.js' %}" defer></script>
+<script src="{% static 'js/dash3d.js' %}" defer></script>
+{% endblock %}

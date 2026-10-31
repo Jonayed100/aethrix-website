@@ -1,0 +1,19 @@
+<a class="ocard tilt-card rise" style="--i:{{ i|default:1 }}" href="{% if as_founder %}{% url 'founder:order' o.reference %}{% else %}{% url 'portal:order' o.reference %}{% endif %}">
+  <div class="ocard-h">
+    <div><span class="oref">{{ o.reference }}</span><h3>{{ o.display_title }}</h3></div>
+    <span class="st st-{{ o.status }}">{{ o.client_status }}</span>
+  </div>
+  {% if o.status != 'declined' %}
+  <ol class="track" style="{% if o.stage == 3 %}--t:1;--c:24px{% elif o.stage == 2 %}--t:.625;--c:12px{% elif o.stage == 1 %}--t:.375;--c:12px{% endif %}" aria-label="Order stage">
+    {% for s in o.track %}<li class="{% if s.done %}is-done{% elif s.current %}is-current{% endif %}"><span></span>{{ s.label }}</li>{% endfor %}
+  </ol>
+  <div class="ocard-row"><div class="bar{% if o.status == 'completed' %} is-done{% endif %}"><i style="--p:{{ o.progress }}%"></i></div><b>{{ o.progress }}%</b></div>
+  {% endif %}
+  <p class="ocard-meta">
+    <span>Service <b>{{ o.services_display }}</b></span>
+    {% if o.quoted_price_bdt %}<span>Price <b>{{ o.quote_display }}</b></span>{% else %}<span>Budget <b>{{ o.budget_display }}</b></span>{% endif %}
+    {% if o.status == 'completed' and o.completed_at %}<span>Delivered <b>{{ o.completed_at|date:"j M Y" }}</b></span>{% elif o.due_date %}<span>Due <b>{{ o.due_date|date:"j M Y" }}</b></span>{% endif %}
+  </p>
+  {% if o.status == 'completed' and o.delivery_url %}<span class="delivered">◆ Live link ready</span>{% endif %}
+  <span class="go">Open order →</span>
+</a>

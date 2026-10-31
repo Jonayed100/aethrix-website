@@ -1,0 +1,44 @@
+{% extends "founder/base.html" %}
+{% block page_title %}Clients{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div><p class="eyebrow">Clients</p><h1>Client <em>accounts.</em></h1><p class="sub">Everyone who signed up on the website. Open any client to see their dashboard exactly as they see it.</p></div>
+  <form class="search" method="get" role="search">
+    <label class="vh" for="q">Search clients</label>
+    <input type="search" id="q" name="q" value="{{ q }}" placeholder="Name, email, phone, company…">
+    <button class="btn btn-ghost btn-sm" type="submit">Search</button>
+  </form>
+</div>
+
+{% if page.object_list %}
+<div class="tbl-wrap rise" style="--i:1">
+  <table class="tbl">
+    <thead><tr><th>Client</th><th>Phone · company</th><th class="num">Orders</th><th class="num">Open</th><th class="num">Completed</th><th>Joined</th><th>Last sign-in</th><th></th></tr></thead>
+    <tbody>
+      {% for c in page.object_list %}
+      <tr>
+        <td><a class="row-link" href="{% url 'founder:client' c.pk %}"><b>{{ c.first_name|default:c.email }}</b></a><small>{{ c.email }}</small></td>
+        <td>{{ c.profile.phone|default:"—" }}<small>{{ c.profile.company }}</small></td>
+        <td class="num">{% if c.total %}<a class="row-link" href="{% url 'founder:orders' %}?q={{ c.email|urlencode }}">{{ c.total }}</a>{% else %}0{% endif %}</td>
+        <td class="num">{{ c.open }}</td>
+        <td class="num">{{ c.done }}</td>
+        <td>{{ c.date_joined|date:"j M Y" }}<small>{% if not c.has_usable_password %}Invited{% elif c.profile.email_verified %}Email verified{% else %}Signed up{% endif %}</small></td>
+        <td>{% if c.last_login %}{{ c.last_login|timesince }} ago{% else %}<span class="muted">Never</span>{% endif %}</td>
+        <td><a class="btn btn-ghost btn-sm" href="{% url 'founder:client' c.pk %}">View dashboard</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if page.has_other_pages %}
+<nav class="pager" aria-label="Pages">
+  {% if page.has_previous %}<a href="?q={{ q|urlencode }}&amp;page={{ page.previous_page_number }}">← Newer</a>{% endif %}
+  <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;page={{ page.next_page_number }}">Older →</a>{% endif %}
+</nav>
+{% endif %}
+{% else %}
+<div class="empty rise" style="--i:1"><b>{% if q %}No client matches "{{ q }}"{% else %}No client accounts yet{% endif %}</b>Clients appear here when they sign up on the website.</div>
+{% endif %}
+{% endblock %}

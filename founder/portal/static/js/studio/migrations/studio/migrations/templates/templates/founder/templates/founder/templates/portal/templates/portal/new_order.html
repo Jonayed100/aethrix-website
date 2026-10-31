@@ -1,0 +1,70 @@
+{% extends "portal/base.html" %}
+{% block page_title %}New order{% endblock %}
+
+{% block content %}
+<div class="topline rise">
+  <div>
+    <p class="eyebrow"><a href="{% url 'portal:dashboard' %}" style="color:inherit">My orders</a> / New order</p>
+    <h1>Order a <em>new project.</em></h1>
+    <p class="sub">Tell us what you want built. Our team gets it straight away and replies within one working day.</p>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <section class="panel rise" style="--i:1">
+    <form class="dform" method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<p class="form-err">{{ form.non_field_errors.0 }}</p>{% endif %}
+
+      {% include "dash/_field.html" with f=form.title %}
+
+      <fieldset class="field choices{% if form.services.errors %} has-err{% endif %}">
+        <legend>{{ form.services.label }} <span class="req">*</span></legend>
+        <div class="choice-row">
+          {% for r in form.services %}
+          <label class="choice">{{ r.tag }}<span>{{ r.choice_label }}</span></label>
+          {% endfor %}
+        </div>
+        {% for e in form.services.errors %}<p class="field-err">{{ e }}</p>{% endfor %}
+      </fieldset>
+
+      {% include "dash/_field.html" with f=form.description %}
+
+      <div class="row2">
+        <div class="field{% if form.budget_bdt.errors %} has-err{% endif %}">
+          <label for="{{ form.budget_bdt.id_for_label }}">{{ form.budget_bdt.label }}</label>
+          <div class="range-row">{{ form.budget_bdt }}<output id="budgetOut" data-bdt-for="{{ form.budget_bdt.id_for_label }}">৳ 80,000</output></div>
+          <p class="help">A rough number is fine. We'll send an exact quote.</p>
+          {% for e in form.budget_bdt.errors %}<p class="field-err">{{ e }}</p>{% endfor %}
+        </div>
+        {% include "dash/_field.html" with f=form.timeline %}
+      </div>
+
+      <div class="btns"><button class="btn btn-primary" type="submit">Place order <span class="arr">→</span></button>
+        <a class="btn btn-ghost" href="{% url 'portal:dashboard' %}">Cancel</a></div>
+    </form>
+  </section>
+
+  <div class="stack">
+    <section class="panel rise" style="--i:2">
+      <div class="panel-h"><h2>Your details</h2><a href="{% url 'portal:account' %}">Edit →</a></div>
+      <dl class="dl">
+        <dt>Name</dt><dd>{{ user_name }}</dd>
+        <dt>Email</dt><dd>{{ request.user.email }}</dd>
+        <dt>Phone</dt><dd>{{ profile.phone|default:"Not added yet" }}</dd>
+        {% if profile.company %}<dt>Company</dt><dd>{{ profile.company }}</dd>{% endif %}
+      </dl>
+      <p class="muted" style="font-size:.82rem;margin:14px 0 0">These are added to your order automatically.</p>
+    </section>
+
+    <section class="panel rise" style="--i:3">
+      <div class="panel-h"><h2>What happens next</h2></div>
+      <ol class="next-steps">
+        <li><b>We review it</b><span>The order lands in our admin dashboard and our inbox right away.</span></li>
+        <li><b>We call you</b><span>Within one working day, to agree on scope, price and dates.</span></li>
+        <li><b>You watch it get built</b><span>Progress, updates and messages appear in your dashboard, and by email.</span></li>
+      </ol>
+    </section>
+  </div>
+</div>
+{% endblock %}

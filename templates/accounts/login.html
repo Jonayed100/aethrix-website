@@ -1,0 +1,21 @@
+{% extends "accounts/auth_base.html" %}
+{% block page_title %}Client login{% endblock %}
+
+{% block card %}
+<p class="eyebrow">Client login</p>
+<h1>Welcome <em>back.</em></h1>
+<p>Sign in with your email and password to see your orders.</p>
+<form class="dform" method="post" novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  {% if error %}<p class="form-err" role="alert">{{ error }}</p>{% endif %}
+  {% for e in form.non_field_errors %}<p class="form-err" role="alert">{{ e }}</p>{% endfor %}
+  {% include "dash/_field.html" with f=form.email label="Email" %}
+  {% include "dash/_field.html" with f=form.password label="Password" %}
+  <button class="btn btn-primary" type="submit">Log in <span class="arr">→</span></button>
+</form>
+<div class="auth-links">
+  <a href="{% url 'accounts:password_forgot' %}">Forgot password?</a>
+  <span>New here? <a href="{% url 'accounts:signup' %}">Create an account</a></span>
+</div>
+{% endblock %}

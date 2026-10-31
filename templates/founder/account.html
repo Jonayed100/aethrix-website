@@ -1,0 +1,31 @@
+{% extends "founder/base.html" %}
+{% block page_title %}Account{% endblock %}
+
+{% block content %}
+<div class="topline rise"><div><p class="eyebrow">Account</p><h1>Your {% if ns == 'founder' %}founder{% else %}admin{% endif %} <em>login.</em></h1></div></div>
+
+<div class="grid2 grid2-even" style="margin-top:0">
+  <section class="panel rise" style="--i:1">
+    <div class="panel-h"><h2>Change password</h2></div>
+    <form class="dform" method="post">
+      {% csrf_token %}
+      {% include "dash/_field.html" with f=form.old_password label="Current password" %}
+      {% include "dash/_field.html" with f=form.new_password1 label="New password" %}
+      {% include "dash/_field.html" with f=form.new_password2 label="Confirm new password" %}
+      <div class="btns"><button class="btn btn-primary" type="submit">Change password</button></div>
+    </form>
+  </section>
+
+  <section class="panel rise" style="--i:2">
+    <div class="panel-h"><h2>Private addresses</h2><span class="label">Not shown on the website</span></div>
+    <dl class="dl">
+      <dt>Signed in as</dt><dd>{{ request.user.email }}</dd>
+      <dt>Role</dt><dd>{% if is_founder %}Founder · sees everything{% else %}Admin · orders and client updates{% endif %}</dd>
+      {% if is_founder %}<dt>Founder login</dt><dd><span class="copy-row"><span class="mono">{{ founder_path }}login/</span><button class="copy" type="button" data-copy="{{ request.scheme }}://{{ request.get_host }}{{ founder_path }}login/">Copy</button></span></dd>{% endif %}
+      <dt>Admin login</dt><dd><span class="copy-row"><span class="mono">{{ panel_path }}login/</span><button class="copy" type="button" data-copy="{{ request.scheme }}://{{ request.get_host }}{{ panel_path }}login/">Copy</button></span></dd>
+      {% if is_founder %}<dt>Backup admin</dt><dd class="mono">{{ admin_path }}</dd>{% endif %}
+    </dl>
+    <p class="muted" style="font-size:.86rem;margin:18px 0 0">{% if is_founder %}Only your account opens the founder dashboard. Admins you add on the Team page open the admin dashboard. Anyone else who tries these addresses gets "page not found". You can change them with the FOUNDER_URL, ADMIN_PANEL_URL and ADMIN_URL settings.{% else %}Keep this address private. Only team accounts can open it; everyone else gets "page not found".{% endif %}</p>
+  </section>
+</div>
+{% endblock %}

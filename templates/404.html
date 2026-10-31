@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Page not found · Project Aethrix{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block body %}
+<div class="sky" aria-hidden="true"></div>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="{% url 'studio:home' %}" aria-label="Project Aethrix home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text"><small>PROJECT</small>AETHRIX</span>
+    </a>
+    {% if user.is_authenticated %}<a class="btn btn-primary nav-cta" href="{{ dashboard_url }}">My dashboard</a>{% else %}<a class="btn btn-primary nav-cta" href="{% url 'accounts:signup' %}">Sign up</a>{% endif %}
+  </div>
+</header>
+<main class="page wrap">
+  <div class="page-card cut">
+    <p class="big-code">404</p>
+    <h1>This page <em>doesn't exist.</em></h1>
+    <p>The link may be old or mistyped. Our services and demo projects are on the home page.</p>
+    <div class="btns"><a class="btn btn-primary" href="{% url 'studio:home' %}">Go to home <span class="arr">→</span></a></div>
+  </div>
+</main>
+{% endblock %}

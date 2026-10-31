@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{% block page_title %}Dashboard{% endblock %} · Project Aethrix{% endblock %}
+{% block head %}<meta name="robots" content="noindex, nofollow"><link rel="stylesheet" href="{% static 'css/dash.css' %}">{% endblock %}
+{% block body_class %}dash-body{% endblock %}
+
+{% block body %}
+<header class="ptop">
+  <div class="ptop-in">
+    <a class="brand" href="{% url 'portal:dashboard' %}" aria-label="Client dashboard home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text"><small>CLIENT</small>AETHRIX</span>
+    </a>
+    <nav class="ptop-nav" aria-label="Dashboard">
+      <a href="{% url 'portal:dashboard' %}" class="{% if section == 'overview' or section == 'orders' %}on{% endif %}">My orders</a>
+      <a href="{% url 'portal:new_order' %}" class="{% if section == 'new' %}on{% endif %}">New order</a>
+      <a href="{% url 'portal:account' %}" class="{% if section == 'account' %}on{% endif %}">Account</a>
+    </nav>
+    <div class="ptop-right">
+      <a class="side-link hide-sm" style="width:auto" href="{% url 'studio:home' %}">Website</a>
+      {% if section != 'new' %}<a class="btn btn-primary btn-sm" href="{% url 'portal:new_order' %}">+ New order</a>{% endif %}
+      <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="side-link" type="submit">Log out</button></form>
+    </div>
+  </div>
+</header>
+<main class="pmain" id="main">
+  {% include "dash/_messages.html" %}
+  {% block content %}{% endblock %}
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/dash.js' %}" defer></script>
+{% block dash_scripts %}{% endblock %}
+{% endblock %}

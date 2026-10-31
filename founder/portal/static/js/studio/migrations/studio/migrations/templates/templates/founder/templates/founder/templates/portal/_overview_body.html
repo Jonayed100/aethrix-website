@@ -1,0 +1,74 @@
+{% comment %}
+The body of a client's dashboard. Used by the client's own dashboard, and by the
+founder's "View dashboard" page (as_founder=True: same view, links go to the founder's order pages).
+{% endcomment %}
+<section class="build rise" style="--i:1" aria-label="Project progress">
+  <div class="build-stage">
+    <canvas data-3d="blocks" data-progress="{% if focus %}{{ focus.progress }}{% else %}0{% endif %}" aria-hidden="true"></canvas>
+  </div>
+  <div class="build-copy">
+    {% if focus %}
+    <p class="label">{% if focus.is_open %}Now building{% else %}Latest delivery{% endif %} · {{ focus.reference }}</p>
+    <h2>{{ focus.display_title }}</h2>
+    <div class="build-pct"><span data-count="{{ focus.progress }}">{{ focus.progress }}</span><small>%</small></div>
+    <ol class="track" style="{% if focus.stage == 3 %}--t:1;--c:24px{% elif focus.stage == 2 %}--t:.625;--c:12px{% elif focus.stage == 1 %}--t:.375;--c:12px{% endif %}" aria-label="Order stage">
+      {% for s in focus.track %}<li class="{% if s.done %}is-done{% elif s.current %}is-current{% endif %}"><span></span>{{ s.label }}</li>{% endfor %}
+    </ol>
+    <p class="build-meta">
+      <span>Status <b>{{ focus.client_status }}</b></span>
+      {% if focus.due_date and focus.is_open %}<span>Due <b>{{ focus.due_date|date:"j M Y" }}</b></span>{% endif %}
+      {% if focus.quoted_price_bdt %}<span>Price <b>{{ focus.quote_display }}</b></span>{% endif %}
+    </p>
+    <div class="btns">
+      <a class="btn btn-ghost btn-sm" href="{% if as_founder %}{% url 'founder:order' focus.reference %}{% else %}{% url 'portal:order' focus.reference %}{% endif %}">Open this order</a>
+      {% if focus.status == 'completed' and focus.delivery_url %}<a class="btn btn-primary btn-sm" href="{{ focus.delivery_url }}" target="_blank" rel="noopener">Open the live project ↗</a>{% endif %}
+    </div>
+    {% elif as_founder %}
+    <p class="label">No orders yet</p>
+    <h2>This client hasn't ordered a project yet.</h2>
+    <p class="muted" style="margin:0">When they order from their dashboard, it appears here and in Orders.</p>
+    {% else %}
+    <p class="label">No projects yet</p>
+    <h2>Your first project will be built right here.</h2>
+    <p class="muted" style="margin:0">Order a project and watch it come together block by block, from first call to delivery.</p>
+    <div class="btns"><a class="btn btn-primary btn-sm" href="{% url 'portal:new_order' %}">Order your first project <span class="arr">→</span></a></div>
+    {% endif %}
+  </div>
+</section>
+
+<dl class="kpis">
+  <div class="kpi rise" style="--i:2"><dt>All orders</dt><dd data-count="{{ stats.total }}">{{ stats.total }}</dd><p>Every project ordered</p></div>
+  <div class="kpi rise{% if stats.active %} hot{% endif %}" style="--i:3"><dt>Active</dt><dd data-count="{{ stats.active }}">{{ stats.active }}</dd><p>Received or being built</p></div>
+  <div class="kpi rise" style="--i:4"><dt>Completed</dt><dd data-count="{{ stats.completed }}">{{ stats.completed }}</dd><p>Delivered</p></div>
+  <div class="kpi rise" style="--i:5"><dt>Delivered value</dt><dd data-count="{{ invested }}" data-format="bdt">{{ invested_display }}</dd><p>Agreed price of completed projects</p></div>
+</dl>
+
+<section style="margin-top:28px">
+  <div class="toolbar">
+    <div class="tabs" role="tablist" data-tabs aria-label="Orders">
+      <button class="tab" type="button" role="tab" id="t-active" data-tab="active" aria-controls="p-active" aria-selected="{% if tab != 'completed' and tab != 'closed' %}true{% else %}false{% endif %}">Active <small>{{ active|length }}</small></button>
+      <button class="tab" type="button" role="tab" id="t-completed" data-tab="completed" aria-controls="p-completed" aria-selected="{% if tab == 'completed' %}true{% else %}false{% endif %}">Completed <small>{{ completed|length }}</small></button>
+      {% if closed %}<button class="tab" type="button" role="tab" id="t-closed" data-tab="closed" aria-controls="p-closed" aria-selected="{% if tab == 'closed' %}true{% else %}false{% endif %}">Closed <small>{{ closed|length }}</small></button>{% endif %}
+    </div>
+  </div>
+
+  <div id="p-active" role="tabpanel" aria-labelledby="t-active"{% if tab == 'completed' or tab == 'closed' %} hidden{% endif %}>
+    {% if active %}
+    <div class="orders">{% for o in active %}{% include "portal/_order_card.html" with i=forloop.counter %}{% endfor %}</div>
+    {% else %}
+    <div class="empty"><b>No active projects</b>{% if as_founder %}Nothing in progress for this client.{% else %}When you order a project, it shows up here with live progress. <a href="{% url 'portal:new_order' %}">Order a project →</a>{% endif %}</div>
+    {% endif %}
+  </div>
+  <div id="p-completed" role="tabpanel" aria-labelledby="t-completed"{% if tab != 'completed' %} hidden{% endif %}>
+    {% if completed %}
+    <div class="orders">{% for o in completed %}{% include "portal/_order_card.html" with i=forloop.counter %}{% endfor %}</div>
+    {% else %}
+    <div class="empty"><b>Nothing completed yet</b>Finished projects move here with their live links.</div>
+    {% endif %}
+  </div>
+  {% if closed %}
+  <div id="p-closed" role="tabpanel" aria-labelledby="t-closed"{% if tab != 'closed' %} hidden{% endif %}>
+    <div class="orders">{% for o in closed %}{% include "portal/_order_card.html" with i=forloop.counter %}{% endfor %}</div>
+  </div>
+  {% endif %}
+</section>

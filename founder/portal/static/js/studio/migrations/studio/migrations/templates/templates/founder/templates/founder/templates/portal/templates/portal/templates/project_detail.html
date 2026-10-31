@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ p.title }} · Demo project · Project Aethrix{% endblock %}
+{% block description %}{{ p.summary|default:p.title }} A demo project by Project Aethrix.{% endblock %}
+{% block og_title %}{{ p.title }} · Project Aethrix{% endblock %}
+{% block body_class %}page-body{% endblock %}
+
+{% block body %}
+<div class="sky" aria-hidden="true"></div>
+{% url 'studio:home' as home_url %}
+{% include "_site_nav.html" with home=home_url %}
+
+<main class="pd">
+  <section class="pd-hero wrap">
+    <div class="pd-hero-copy">
+      <p class="pd-crumb"><a href="{{ home_url }}#work">Demo projects</a><span>/</span>{{ p.title }}</p>
+      <p class="eyebrow">{{ p.get_category_display }} · Demo project</p>
+      <h1>{{ p.title }}</h1>
+      {% if p.summary %}<p class="pd-sum">{{ p.summary }}</p>{% endif %}
+      <div class="btns">
+        {% if p.live_url %}<a class="btn btn-primary magnet" href="{{ p.live_url }}" target="_blank" rel="noopener">Open the live demo <span class="arr">↗</span></a>{% endif %}
+        <a class="btn btn-ghost magnet" href="#build-yours">Build something like this</a>
+      </div>
+      {% if p.live_url or p.tech_list %}
+      <dl class="pd-meta">
+        {% if p.live_url %}<div><dt>Live at</dt><dd><a href="{{ p.live_url }}" target="_blank" rel="noopener">{{ p.domain }}</a></dd></div>{% endif %}
+        {% if p.tech_list %}<div><dt>Built with</dt><dd>{{ p.tech_list|join:" · " }}</dd></div>{% endif %}
+        <div><dt>Features</dt><dd>{{ p.feature_items|length }}</dd></div>
+      </dl>
+      {% endif %}
+    </div>
+    <div class="pd-cube-stage" aria-hidden="true">
+      <div class="pd-cube">
+        <i class="f1"></i><i class="f2"></i><i class="f3"></i><i class="f4"></i><i class="f5"></i><i class="f6"></i>
+      </div>
+    </div>
+  </section>
+
+  {% if p.description_paragraphs %}
+  <section class="pd-sec wrap">
+    <div class="pd-text">
+      {% for para in p.description_paragraphs %}<p{% if forloop.first %} class="pd-lead"{% endif %}>{{ para }}</p>{% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if p.feature_items %}
+  <section class="pd-sec wrap" aria-labelledby="featTitle">
+    <div class="pd-head"><p class="eyebrow">Features</p><h2 id="featTitle">{{ p.features_title|default:"What it does" }}</h2></div>
+    <ol class="feat-grid">
+      {% for f in p.feature_items %}
+      <li class="feat cut">
+        <span class="feat-n">{{ forloop.counter|stringformat:"02d" }}</span>
+        {% if f.name %}<h3>{{ f.name }}</h3><p>{{ f.text }}</p>{% else %}<p class="feat-solo">{{ f.text }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+  {% endif %}
+
+  {% if p.roadmap_items %}
+  <section class="pd-sec wrap" aria-labelledby="roadTitle">
+    <div class="pd-head"><p class="eyebrow">Roadmap</p><h2 id="roadTitle">{{ p.roadmap_title|default:"What's coming" }}</h2></div>
+    <ol class="road">
+      {% for r in p.roadmap_items %}<li><span>{{ forloop.counter|stringformat:"02d" }}</span><p>{% if r.name %}<b>{{ r.name }}</b> {{ r.text }}{% else %}{{ r.text }}{% endif %}</p></li>{% endfor %}
+    </ol>
+    {% if p.roadmap_note %}<p class="road-note">{{ p.roadmap_note }}</p>{% endif %}
+  </section>
+  {% endif %}
+
+  {% if p.closing_title or p.closing_paragraphs %}
+  <section class="pd-sec wrap">
+    <div class="pd-closing cut">
+      {% if p.closing_title %}<p class="eyebrow">{{ p.closing_title }}</p>{% endif %}
+      {% for para in p.closing_paragraphs %}<p{% if forloop.last and forloop.counter > 1 %} class="pd-sign"{% endif %}>{{ para }}</p>{% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="pd-sec wrap" id="build-yours">
+    <div class="pd-cta">
+      <div>
+        <p class="eyebrow">Your project</p>
+        <h2>Want something like <em>{{ p.title }}?</em></h2>
+        <p class="lede">Tell us about your business. We'll plan it with you, build it, and you follow every step in your own dashboard.</p>
+      </div>
+      <div class="btns">
+        {% if not user.is_authenticated %}
+        <a class="btn btn-primary magnet" href="{% url 'accounts:signup' %}">Sign up and order <span class="arr">→</span></a>
+        <a class="btn btn-ghost magnet" href="{% url 'accounts:login' %}">Log in</a>
+        {% elif is_team %}
+        <a class="btn btn-primary magnet" href="{{ dashboard_url }}">My dashboard <span class="arr">→</span></a>
+        {% else %}
+        <a class="btn btn-primary magnet" href="{% url 'portal:new_order' %}">Order a project <span class="arr">→</span></a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {% if others %}
+  <section class="pd-sec wrap" aria-labelledby="moreTitle">
+    <div class="pd-head"><p class="eyebrow">More demo projects</p><h2 id="moreTitle">Keep exploring</h2></div>
+    <div class="pd-others">
+      {% for o in others %}
+      <a class="pd-other cut" href="{{ o.get_absolute_url }}">
+        <span>{{ o.get_category_display }}</span>
+        <b>{{ o.title }}</b>
+        {% if o.summary %}<em>{{ o.summary }}</em>{% endif %}
+        <small>View details →</small>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</main>
+
+{% include "_site_foot.html" with home=home_url %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/page.js' %}" defer></script>
+{% endblock %}

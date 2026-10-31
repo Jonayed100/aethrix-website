@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{% block page_title %}Overview{% endblock %} · {{ console_label|default:"Founder" }} · Project Aethrix{% endblock %}
+{% block head %}<meta name="robots" content="noindex, nofollow"><link rel="stylesheet" href="{% static 'css/dash.css' %}">{% endblock %}
+{% block body_class %}dash-body{% if ns == 'adminpanel' %} is-admin{% endif %}{% endblock %}
+
+{% block body %}
+<div class="dash">
+  <aside class="side">
+    <a class="side-brand" href="{% url ns|add:':overview' %}" aria-label="{{ console_label }} dashboard home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text"><small>{{ console_label|upper }}</small>AETHRIX</span>
+    </a>
+    <nav class="side-nav" aria-label="{{ console_label }} dashboard">
+      <a href="{% url ns|add:':overview' %}" class="{% if section == 'overview' %}on{% endif %}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Overview</a>
+      <a href="{% url ns|add:':orders' %}" class="{% if section == 'orders' %}on{% endif %}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Orders{% if nav_new %}<span class="badge" title="New orders">{{ nav_new }}</span>{% endif %}</a>
+      {% if ns == 'founder' %}
+      <a href="{% url 'founder:clients' %}" class="{% if section == 'clients' %}on{% endif %}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6v7H9zM4 21l2.5-7h11l2.5 7z"/></svg>Clients</a>
+      <a href="{% url 'founder:team' %}" class="{% if section == 'team' %}on{% endif %}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h7v7H3zM14 4h7v7h-7zM8.5 13h7v7h-7z"/></svg>Team (admins)</a>
+      <a href="{% url 'founder:projects' %}" class="{% if section == 'projects' %}on{% endif %}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3z"/><path d="M3 9h18M8 13h5"/></svg>Demo projects</a>
+      {% endif %}
+      <a href="{% url ns|add:':account' %}" class="{% if section == 'account' %}on{% endif %}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5z"/><path d="M8 11V5h8v6M12 15v2"/></svg>Account</a>
+    </nav>
+    <div class="side-foot">
+      {% if ns == 'founder' %}<a class="side-link hide-sm" href="{% url 'adminpanel:overview' %}">Admin dashboard ↗</a>
+      {% elif is_founder %}<a class="side-link hide-sm" href="{% url 'founder:overview' %}">← Founder dashboard</a>{% endif %}
+      <a class="side-link hide-sm" href="{% url 'studio:home' %}" target="_blank" rel="noopener">View website ↗</a>
+      <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="side-link" type="submit">Log out</button></form>
+      <p class="side-user">{{ user_name }} · {% if is_founder %}Founder{% else %}Admin{% endif %}<br>{{ request.user.email }}</p>
+    </div>
+  </aside>
+  <main class="main" id="main">
+    {% include "dash/_messages.html" %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/dash.js' %}" defer></script>
+{% block dash_scripts %}{% endblock %}
+{% endblock %}

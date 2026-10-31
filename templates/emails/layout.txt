@@ -1,0 +1,17 @@
+{% autoescape off %}{{ heading }}
+{% if intro %}
+{{ intro }}
+{% endif %}{% if rows %}
+{% for label, value in rows %}{{ label }}: {{ value }}
+{% endfor %}{% endif %}{% if quote %}
+{% if quote_title %}{{ quote_title }}:
+{% endif %}{{ quote }}
+{% endif %}{% if button_url %}
+{{ button_label }}: {{ button_url }}
+{% endif %}{% if outro %}
+{{ outro }}
+{% endif %}
+{{ founder_name }}
+Founder, {{ site_name }}
+{{ contact_email }} · {{ site_url }}
+{% endautoescape %}
